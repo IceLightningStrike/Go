@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+
+<body>
+    {% for dat in list_html %}
+    <div>
+        <span></span>
+        <ul>
+            {% for d in dat %}
+                <li> {{ d }} </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <br>
+    {% endfor %}
+</body>

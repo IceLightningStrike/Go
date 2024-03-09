@@ -153,6 +153,9 @@ class Go:
         for i, j in handicap_sequence[handicap_sizes.index((self.width, self.height)) + 1][:n]:
             self.board[i][j] = self.current_move
 
+    def is_end(self) -> bool:
+        return False
+    
     def reset(self: Go) -> None:
         self.board = [["."] * self.width for _ in range(self.height)]
         self.global_boards_history = [deepcopy(self.board)]
