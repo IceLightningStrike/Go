@@ -5,13 +5,12 @@ from field_picture_drawing import update_board_picture
 from preparing import *
 from go import Go
 
+from random import randint
+
 from flask import Flask, render_template, redirect, request, make_response, session
 from data import db_session
 from data.users import User
 from data.news import News
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired
 from flask_login import LoginManager, login_user
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
@@ -23,6 +22,13 @@ login_manager.init_app(app)
 
 db_session.global_init('db/blogs.db')
 db_sess = db_session.create_session()
+
+
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 0
+    return response
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -44,17 +50,17 @@ def greeting() -> str:
 @app.route('/trigger_function', methods=['POST'])
 def trigger_function():
     if request.method == 'POST':
-        game_numbrer = int(request.form["game_number"])
+        game_number = int(request.form["game_number"])
         ip_address = request.access_route[-1]
 
         first, second = [
             (
-                    ip_address == games_dictionary[game_numbrer]["player_1"] and
-                    games_dictionary[game_numbrer]["game"].turn == "black"
+                ip_address == games_dictionary[game_number]["player_1"] and
+                games_dictionary[game_number]["game"].turn == "black"
             ),
             (
-                    ip_address == games_dictionary[game_numbrer]["player_2"] and
-                    games_dictionary[game_numbrer]["game"].turn == "white"
+                ip_address == games_dictionary[game_number]["player_2"] and
+                games_dictionary[game_number]["game"].turn == "white"
             )
         ]
 
@@ -63,19 +69,19 @@ def trigger_function():
 
         site_field_width, site_field_height = map(int, map(float, request.form["size"].split(";")))
 
-        field_width = site_field_width // (games_dictionary[game_numbrer]["game"].width + 3)
-        field_height = site_field_height // (games_dictionary[game_numbrer]["game"].height + 3)
+        field_width = site_field_width // (games_dictionary[game_number]["game"].width + 3)
+        field_height = site_field_height // (games_dictionary[game_number]["game"].height + 3)
 
         x, y = map(int, map(float, request.form["coordinates"].split(";")))
         x, y = x - field_width * 2, y - field_height * 2
         x, y = (x + field_width // 2) // field_width, (y + field_height // 2) // field_height
 
         try:
-            games_dictionary[game_numbrer]["game"].move(
-                f"{games_dictionary[game_numbrer]['game'].height - y}" +
-                f"{games_dictionary[game_numbrer]['game'].alphabet[x]}"
+            games_dictionary[game_number]["game"].move(
+                f"{games_dictionary[game_number]['game'].height - y}" +
+                f"{games_dictionary[game_number]['game'].alphabet[x]}"
             )
-            update_board_picture(game_numbrer, games_dictionary[game_numbrer]["game"])
+            update_board_picture(game_number, games_dictionary[game_number]["game"])
         except Exception as error:
             print(repr(error))
 

@@ -1,14 +1,3 @@
-function UpdatePicture(canvas_object) {
-    ctx = canvas_object.getContext('2d');
-
-    let img = new Image();
-    img.src = "/static/game_links/" + game_number + "/game_picture.jpeg";
-    
-    img.onload = function(){
-        ctx.drawImage(img, 0, 0, canvas_object.width, canvas_object.height);
-    }    
-}
-
 function getCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect();
 
@@ -30,13 +19,12 @@ function postData(input_coordinates, input_size) {
             coordinates: input_coordinates,
             size: input_size
         },
-        success: callbackFunc
+        success: callbackFunc,
     });
-    location.reload(true);
 }
 
 function callbackFunc(response) {
-    location.reload();
+    console.log(response);
 }
 
 
@@ -48,10 +36,17 @@ canvas.addEventListener('mousedown', function(e) {
     getCursorPosition(canvas, e)
 })
 
-var canvas_object = document.getElementById("game_canvas");
+canvas_object = document.getElementById("game_canvas");
 canvas_object.width = 500;
 canvas_object.height = 500;
 
-UpdatePicture(canvas_object)
+setInterval(function UpdatePicture() {
+    canvas_object = document.getElementById("game_canvas");
+    ctx = canvas_object.getContext('2d');
 
-document.getElementById("game_update_button").onclick = function () { location.reload(); };
+    img = new Image();
+    img.src = "/static/game_links/" + game_number + "/game_picture.jpeg?" + Date.now();
+    img.onload = function(){
+        ctx.drawImage(img, 0, 0, canvas_object.width, canvas_object.height);
+    }
+}, 100);

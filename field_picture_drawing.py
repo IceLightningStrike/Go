@@ -2,7 +2,7 @@ from PIL import ImageDraw, ImageFont, Image
 from go import Go
 
 BACKGROUND_COLOR = (221, 134, 74)
-WIDTH = HEIGHT = SIZE = 2000
+WIDTH = HEIGHT = SIZE = 1000
 
 def update_board_picture(game_number: int, board: Go) -> None:
     img = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND_COLOR)
@@ -38,8 +38,8 @@ def update_board_picture(game_number: int, board: Go) -> None:
         )
 
         coords = (cell_size * 2, cell_size * index), (cell_size * (board.width + 1), cell_size * index)
-        drawer.line(((coords[0][0], coords[0][1]), (coords[1][0], coords[1][1])), fill=(0, 0, 0), width=10)
-        drawer.line(((coords[0][1], coords[0][0]), (coords[1][1], coords[1][0])), fill=(0, 0, 0), width=10)
+        drawer.line(((coords[0][0], coords[0][1]), (coords[1][0], coords[1][1])), fill=(0, 0, 0), width=5)
+        drawer.line(((coords[0][1], coords[0][0]), (coords[1][1], coords[1][0])), fill=(0, 0, 0), width=5)
 
     for i_index, line in enumerate(board.board):
         for j_index, element in enumerate(line):
