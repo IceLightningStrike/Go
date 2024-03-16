@@ -1,0 +1,17 @@
+from flask import request
+
+@app.route(f"/game/{}")
+def game_{}() -> None:
+    ip_address = request.access_route[-1]
+    
+    if games_dictionary[{}] is None:
+        games_dictionary[{}] = dict((
+            ('game', Go(9)),
+            ('player_1', ip_address),
+            ('player_2', None)
+        ))
+    elif games_dictionary[{}]["player_2"] is None:
+        if ip_address != games_dictionary[{}]["player_1"]:
+            games_dictionary[{}]["player_2"] = ip_address
+
+    return render_template("game.html")

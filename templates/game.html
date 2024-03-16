@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<head>
+<html>
+    <head>
+        <title>Game of Go</title>
+        <link rel="stylesheet" href="/static/css/game_field.css">
+    </head>
 
-</head>
+    <body>
+        <div id="content"></div>
+        <canvas id="game_canvas"></canvas>
 
-<body>
-    {% for dat in list_html %}
-    <div>
-        <span></span>
-        <ul>
-            {% for d in dat %}
-                <li> {{ d }} </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <br>
-    {% endfor %}
-</body>
+        <div style="text-align: center;">
+            <button id="game_update_button">Update</button>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/scripts/game.js"></script>
+    </body>
+</html>
