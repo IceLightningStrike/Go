@@ -34,6 +34,14 @@ def load_user(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    id = request.access_route[-1]
+    param = {
+        'if_else': False,
+        'name': 1
+    }
+    if request.access_route[-1] in client_tuple.keys():
+        param['if_else'] = True
+        param['name'] = client_tuple[id][1]
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -52,15 +60,23 @@ def login():
         return render_template(
             'login.html',
             message="Неправильный логин или пароль",
-            form=form
+            form=form,
+            **param
         )
 
-    return render_template('login.html', title='Авторизация', form=form)
+    return render_template('login.html', title='Авторизация', form=form, **param)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
-
+    id = request.access_route[-1]
+    param = {
+        'if_else': False,
+        'name': 1
+    }
+    if request.access_route[-1] in client_tuple.keys():
+        param['if_else'] = True
+        param['name'] = client_tuple[id][1]
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -68,7 +84,8 @@ def reqister():
                 'register.html',
                 title='Регистрация',
                 form=form,
-                message="Пароли не совпадают"
+                message="Пароли не совпадают",
+                **param
             )
 
         db_sess = db_session.create_session()
@@ -76,7 +93,8 @@ def reqister():
             return render_template(
                 'register.html', title='Регистрация',
                 form=form,
-                message="Такой пользователь уже есть"
+                message="Такой пользователь уже есть",
+                **param
             )
 
         user = User(
@@ -89,9 +107,9 @@ def reqister():
         db_sess.add(user)
         db_sess.commit()
 
-        return redirect('/login')
+        return render_template('login.html', **param)
 
-    return render_template('register.html', title='Регистрация', form=form)
+    return render_template('register.html', title='Регистрация', form=form, **param)
 
 
 def creat_similar_game_functions() -> None:
@@ -103,10 +121,14 @@ def creat_similar_game_functions() -> None:
 @app.route("/")
 def greeting() -> str:
     id = request.access_route[-1]
-    if id in client_tuple.keys():
-        return render_template("greeting.html", if_else=True, name=client_tuple[id][1])
-    return render_template("greeting.html", if_else=False, name=1)
-
+    param = {
+        'if_else': False,
+        'name': 1
+    }
+    if request.access_route[-1] in client_tuple.keys():
+        param['if_else'] = True
+        param['name'] = client_tuple[id][1]
+    return render_template("greeting.html", **param)
 
 
 @app.route('/trigger_function', methods=['POST'])
