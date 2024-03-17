@@ -10,30 +10,81 @@ from random import randint
 from flask import Flask, render_template, redirect, request, make_response, session
 from data import db_session
 from data.users import User
-from data.news import News
+from data.client import Client
 from flask_login import LoginManager, login_user
 from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 
 app = Flask(__name__)
 
+app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-db_session.global_init('db/blogs.db')
+db_session.global_init('db/users.db')
 db_sess = db_session.create_session()
-
-
-@app.after_request
-def add_header(response):
-    response.cache_control.max_age = 0
-    return response
 
 
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect("/")
+
+        return render_template(
+            'login.html',
+            message="Неправильный логин или пароль",
+            form=form
+        )
+
+    return render_template('login.html', title='Авторизация', form=form)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def reqister():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template(
+                'register.html',
+                title='Регистрация',
+                form=form,
+                message="Пароли не совпадают"
+            )
+
+        db_sess = db_session.create_session()
+        if db_sess.query(User).filter(User.email == form.email.data).first():
+            return render_template(
+                'register.html', title='Регистрация',
+                form=form,
+                message="Такой пользователь уже есть"
+            )
+
+        user = User(
+            name=form.name.data,
+            email=form.email.data,
+            about=form.about.data
+        )
+
+        user.set_password(form.password.data)
+        db_sess.add(user)
+        db_sess.commit()
+
+        return redirect('/login')
+
+    return render_template('register.html', title='Регистрация', form=form)
 
 
 def creat_similar_game_functions() -> None:
@@ -55,12 +106,12 @@ def trigger_function():
 
         first, second = [
             (
-                ip_address == games_dictionary[game_number]["player_1"] and
-                games_dictionary[game_number]["game"].turn == "black"
+                    ip_address == games_dictionary[game_number]["player_1"] and
+                    games_dictionary[game_number]["game"].turn == "black"
             ),
             (
-                ip_address == games_dictionary[game_number]["player_2"] and
-                games_dictionary[game_number]["game"].turn == "white"
+                    ip_address == games_dictionary[game_number]["player_2"] and
+                    games_dictionary[game_number]["game"].turn == "white"
             )
         ]
 
@@ -104,62 +155,6 @@ def game_field() -> str:
             return redirect(f"game/{key}")
 
     return render_template("no_memory_for_fields_error.html")
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
-
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            return redirect("/")
-        
-        return render_template(
-            'login.html',
-            message="Неправильный логин или пароль",
-            form=form
-        )
-    
-    return render_template('login.html', title='Авторизация', form=form)
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def reqister():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            return render_template(
-                'register.html',
-                title='Регистрация',
-                form=form,
-                message="Пароли не совпадают"
-            )
-        
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template(
-                'register.html', title='Регистрация',
-                form=form,
-                message="Такой пользователь уже есть"
-            )
-        
-        user = User(
-            name=form.name.data,
-            email=form.email.data,
-            about=form.about.data
-        )
-
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
-
-        return redirect('/login')
-
-    return render_template('register.html', title='Регистрация', form=form)
 
 
 if __name__ == "__main__":
