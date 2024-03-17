@@ -23,6 +23,7 @@ login_manager.init_app(app)
 
 db_session.global_init('db/users.db')
 db_sess = db_session.create_session()
+client_tuple = {}
 
 
 @login_manager.user_loader
@@ -41,6 +42,11 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
+
+            client_tuple[request.access_route[-1]] = [user.id, user.name]
+
+            print(client_tuple)
+
             return redirect("/")
 
         return render_template(
