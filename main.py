@@ -43,7 +43,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
 
-            client_tuple[request.access_route[-1]] = [user.id, user.name]
+            client_tuple[request.access_route[-1]] = [user.id, user.name, False]
 
             print(client_tuple)
 
@@ -60,6 +60,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
+
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -101,7 +102,11 @@ def creat_similar_game_functions() -> None:
 
 @app.route("/")
 def greeting() -> str:
-    return render_template("greeting.html")
+    id = request.access_route[-1]
+    if id in client_tuple.keys():
+        return render_template("greeting.html", if_else=True, name=client_tuple[id][1])
+    return render_template("greeting.html", if_else=False, name=1)
+
 
 
 @app.route('/trigger_function', methods=['POST'])
