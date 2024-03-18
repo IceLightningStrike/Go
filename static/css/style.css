@@ -31,3 +31,8 @@ p
 {
     color: white;
 }
+.form-register
+{
+    display: flex;
+    justify-content: center;
+}
