@@ -23,7 +23,8 @@ login_manager.init_app(app)
 
 db_session.global_init('db/users.db')
 db_sess = db_session.create_session()
-client_tuple = {}
+# client_tuple = {}
+client_tuple = {'127.0.0.1': [1, 'test', False]}
 
 
 @login_manager.user_loader
@@ -110,6 +111,14 @@ def reqister():
         return render_template('login.html', **param)
 
     return render_template('register.html', title='Регистрация', form=form, **param)
+
+
+@app.route('/out')
+def out():
+    id = request.access_route[-1]
+    del client_tuple[id]
+    print(client_tuple)
+    return redirect("/")
 
 
 def creat_similar_game_functions() -> None:

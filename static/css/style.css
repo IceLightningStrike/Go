@@ -1,0 +1,33 @@
+.die
+{
+    background-color: #111111;
+    display: flex;
+    justify-content: space-between;
+    padding : 10px;
+}
+.body-main
+{
+    background-color: #373737;
+}
+.name-site
+{
+    color: white;
+    display: inline;
+}
+.data-register-login
+{
+    display: inline;
+    margin: 10px;
+}
+.data-site
+{
+    margin: 5px;
+}
+h1
+{
+    color: white;
+}
+p
+{
+    color: white;
+}
