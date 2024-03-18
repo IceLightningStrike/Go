@@ -140,6 +140,12 @@ def greeting() -> str:
     return render_template("greeting.html", **param)
 
 
+@app.route("/user_data")
+def user_data():
+    param = {}
+    return render_template("greeting.html", **param)
+
+
 @app.route('/trigger_function', methods=['POST'])
 def trigger_function():
     if request.method == 'POST':
