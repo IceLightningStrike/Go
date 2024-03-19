@@ -30,6 +30,7 @@ function callbackFunc(response) {
 
 let url = String(document.URL);
 let game_number = url.slice(url.lastIndexOf("/") + 1, url.length)
+let counter = 0;
 
 const canvas = document.querySelector('canvas')
 canvas.addEventListener('mousedown', function(e) {
@@ -44,8 +45,10 @@ setInterval(function UpdatePicture() {
     canvas_object = document.getElementById("game_canvas");
     ctx = canvas_object.getContext('2d');
 
+    counter++;
+
     img = new Image();
-    img.src = "/static/game_links/" + game_number + "/game_picture.jpeg?" + Date.now();
+    img.src = "/static/game_links/" + game_number + "/game_picture.jpeg?" + counter;
     img.onload = function(){
         ctx.drawImage(img, 0, 0, canvas_object.width, canvas_object.height);
     }

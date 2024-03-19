@@ -99,7 +99,8 @@ def reqister():
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template(
-                'register.html', title='Регистрация',
+                'register.html',
+                title='Регистрация',
                 form=form,
                 message="Такой пользователь уже есть",
                 **param
@@ -115,7 +116,7 @@ def reqister():
         db_sess.add(user)
         db_sess.commit()
 
-        return render_template('login.html', **param)
+        return redirect("/")
 
     return render_template('register.html', title='Регистрация', form=form, **param)
 
