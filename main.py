@@ -22,9 +22,10 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 db_session.global_init('db/users.db')
-db_sess = db_session.create_session()
-# client_tuple = {}
-client_tuple = {'127.0.0.1': [1, 'test', False]}
+
+client_tuple = {
+    '127.0.0.1': [1, 'Test', False]
+}
 
 
 @login_manager.user_loader
@@ -35,14 +36,17 @@ def load_user(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    id = request.access_route[-1]
+    ip_address = request.access_route[-1]
+
     param = {
-        'if_else': False,
+        'name_is_exist': False,
         'name': 1
     }
-    if request.access_route[-1] in client_tuple.keys():
-        param['if_else'] = True
-        param['name'] = client_tuple[id][1]
+
+    if ip_address in client_tuple:
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -70,15 +74,18 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
-    id = request.access_route[-1]
+    ip_address = request.access_route[-1]
     param = {
-        'if_else': False,
+        'name_is_exist': False,
         'name': 1
     }
-    if request.access_route[-1] in client_tuple.keys():
-        param['if_else'] = True
-        param['name'] = client_tuple[id][1]
+
+    if ip_address in client_tuple:
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
     form = RegisterForm()
+
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template(
@@ -115,8 +122,13 @@ def reqister():
 
 @app.route('/out')
 def out():
-    id = request.access_route[-1]
-    del client_tuple[id]
+    ip_address = request.access_route[-1]
+
+    try:
+        del client_tuple[ip_address]
+    except KeyError as error:
+        print(repr(error))
+
     print(client_tuple)
     return redirect("/")
 
@@ -124,19 +136,21 @@ def out():
 def creat_similar_game_functions() -> None:
     for play_number in range(1, COUNT_OF_PLAY_FUNCTIONS + 1):
         with open("game_function_pattern.txt", "r", encoding="UTF-8") as file:
-            exec(file.read().format(*((play_number,) * 7)))
+            exec(file.read().format(*((play_number,) * 8)))
 
 
 @app.route("/")
 def greeting() -> str:
-    id = request.access_route[-1]
+    ip_address = request.access_route[-1]
     param = {
-        'if_else': False,
+        'name_is_exist': False,
         'name': 1
     }
+
     if request.access_route[-1] in client_tuple.keys():
-        param['if_else'] = True
-        param['name'] = client_tuple[id][1]
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+    
     return render_template("greeting.html", **param)
 
 
