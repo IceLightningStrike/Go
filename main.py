@@ -139,13 +139,19 @@ def user_data():
     user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
     # count_win
     # count
+    user_list = []
+    for elem in db_sess.query(User).all():
+        user_list.append([elem.name, elem.count_win])
+    user_list.sort(key=lambda x: x[-1], reverse=True)
+    user_list = [f'{i[0]}({i[-1]})' for i in user_list]
     param = {
         'name_is_exist': False,
         'name': 1,
         "text_me": user.about,
         'title': 'Аккаунт',
         'count_win': user.count_win,
-        'count': user.count
+        'count': user.count,
+        'user_list': user_list
     }
 
     if request.access_route[-1] in client_tuple.keys():

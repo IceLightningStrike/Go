@@ -13,11 +13,22 @@
     <div class="count-game">
         <div>
             <p style="display: inline;">Всего игр: {{ count }}</p>
-
+            <br>
             <p style="display: inline;">Игры🏆: {{ count_win }}</p>
         </div>
     </div>
-
+    <h2>Таблица лидеров</h2>
+    <div class="leaderboard">
+        <ul>
+            {% for user in user_list %}
+            {% if user == name %}
+            <li style="">{{ loop.index }} - {{ user }}</li>
+            {% else %}
+            <li>{{ loop.index }} - {{ user }}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 <div class="lower-panel">
     <p class="button-data-user">

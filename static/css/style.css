@@ -83,4 +83,7 @@ p
     border: 10px outset black;
     border-radius: 15px;
     background-color: #111111;
+    max-width: 160px;
+    padding: 5px;
+    margin: 5px;
 }
