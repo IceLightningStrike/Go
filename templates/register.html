@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="form-register">
-    <div>
+    <div class="form-login-register">
         <h1>Регистрация</h1>
         <form action="" method="post">
             {{ form.hidden_tag() }}
@@ -52,7 +52,7 @@
             {% endfor %}
             </p>
             <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-            {{message}}
+            <div class="message">{{ message }}</div>
         </form>
     </div>
 </div>

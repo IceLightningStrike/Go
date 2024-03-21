@@ -13,13 +13,13 @@
 <body class="body-main">
 <header>
     <nav class="die">
-
-        <h1 class="name-site">GO</h1>
-
-        {% if if_else == True %}
+        <div>
+            <img class="img-icon" src="../static/img/icon.png" alt="ну что то с текстом простите">
+            <h1 class="name-site">GO</h1>
+        </div>
+        {% if name_is_exist == True %}
         <p class="data-register-login">
             <a class="navbar-brand" href="/user_data">{{ name }}</a>
-            <a class="btn btn-info" href="/out">Выход</a>
         </p>
         {% else %}
         <p class="data-register-login">

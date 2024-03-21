@@ -23,9 +23,7 @@ login_manager.init_app(app)
 
 db_session.global_init('db/users.db')
 
-client_tuple = {
-    '127.0.0.1': [1, 'Test', False]
-}
+client_tuple = {'127.0.0.1': [2, 'Test', False]}
 
 
 @login_manager.user_loader
@@ -134,6 +132,25 @@ def out():
     return redirect("/")
 
 
+@app.route('/user_data')
+def user_data():
+    ip_address = request.access_route[-1]
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
+    param = {
+        'name_is_exist': False,
+        'name': 1,
+        "text_me": user.about,
+        'title': 'Аккаунт'
+    }
+
+    if request.access_route[-1] in client_tuple.keys():
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
+    return render_template("data_user.html", **param)
+
+
 def creat_similar_game_functions() -> None:
     for play_number in range(1, COUNT_OF_PLAY_FUNCTIONS + 1):
         with open("game_function_pattern.txt", "r", encoding="UTF-8") as file:
@@ -145,19 +162,14 @@ def greeting() -> str:
     ip_address = request.access_route[-1]
     param = {
         'name_is_exist': False,
-        'name': 1
+        'name': 1,
+        'title': 'Главное меню'
     }
 
     if request.access_route[-1] in client_tuple.keys():
         param['name_is_exist'] = True
         param['name'] = client_tuple[ip_address][1]
-    
-    return render_template("greeting.html", **param)
 
-
-@app.route("/user_data")
-def user_data():
-    param = {}
     return render_template("greeting.html", **param)
 
 

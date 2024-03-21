@@ -17,13 +17,17 @@
 .data-register-login
 {
     display: inline;
-    margin: 10px;
+    margin: 20px;
 }
 .data-site
 {
     margin: 5px;
 }
 h1
+{
+    color: white;
+}
+h2
 {
     color: white;
 }
@@ -35,4 +39,34 @@ p
 {
     display: flex;
     justify-content: center;
+}
+.form-login-register
+{
+    background-color: #0c114f;
+    width: 30%;
+    padding: 30px;
+    border: 10px outset black;
+    border-radius: 30px;
+}
+.message
+{
+    color: white;
+}
+.img-icon
+{
+    border: 10px outset black;
+    border-radius: 60px;
+    width: 75px;
+    height: 75px;
+}
+.data-user
+{
+    background-color: #0c114f;
+    padding: 10px;
+    border: 10px outset blue;
+    border-radius: 15px;
+}
+.line-dividing
+{
+    border: 2px solid black;
 }
