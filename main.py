@@ -154,8 +154,7 @@ def user_data():
         'count': user.count,
         'user_list': user_list,
         'name_user': f'{user.name}({user.count_win})',
-        'place': place,
-        'play_game': False
+        'place': place
     }
 
     if request.access_route[-1] in client_tuple.keys():

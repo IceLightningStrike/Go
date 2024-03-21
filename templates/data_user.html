@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-
+<div class="btn-game">
+    <a class="btn btn-info" href="/game">Играть</a>
+</div>
 <div>
     <h2>О себе</h2>
     <div class="data-user">
@@ -42,5 +44,13 @@
     <p class="button-data-user">
         <a class="btn btn-danger" href="/out">Выход</a>
     </p>
+</div>
+<div class="authors">
+    <div class="author">
+        <p>Создатель Go и часть frontend: Герман Гриднев</p>
+    </div>
+    <div class="author">
+        <p>Создатель БД и часть frontend: Алексей Кулагин</p>
+    </div>
 </div>
 {% endblock %}
