@@ -154,12 +154,14 @@ def user_data():
         'count': user.count,
         'user_list': user_list,
         'name_user': f'{user.name}({user.count_win})',
-        'place': place
+        'place': place,
+        'play_game': False
     }
 
     if request.access_route[-1] in client_tuple.keys():
         param['name_is_exist'] = True
         param['name'] = client_tuple[ip_address][1]
+        param['play_game'] = True
 
     return render_template("data_user.html", **param)
 
