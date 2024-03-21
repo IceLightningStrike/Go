@@ -15,16 +15,18 @@
             <p style="display: inline;">Всего игр: {{ count }}</p>
             <br>
             <p style="display: inline;">Игры🏆: {{ count_win }}</p>
+            <br>
+            <p style="display: inline;">Место: {{ place }}</p>
         </div>
     </div>
     <h2>Таблица лидеров</h2>
     <div class="leaderboard">
-        <ul>
+        <ul class="list-users">
             {% for user in user_list %}
-            {% if user == name %}
-            <li style="">{{ loop.index }} - {{ user }}</li>
+            {% if user == name_user %}
+            <li style="color: yellow;">{{ loop.index }} - {{ user }}</li>
             {% else %}
-            <li>{{ loop.index }} - {{ user }}</li>
+            <li style="color: white;">{{ loop.index }} - {{ user }}</li>
             {% endif %}
             {% endfor %}
         </ul>

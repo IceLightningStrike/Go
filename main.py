@@ -144,6 +144,7 @@ def user_data():
         user_list.append([elem.name, elem.count_win])
     user_list.sort(key=lambda x: x[-1], reverse=True)
     user_list = [f'{i[0]}({i[-1]})' for i in user_list]
+    place = user_list.index(f'{user.name}({user.count_win})') + 1
     param = {
         'name_is_exist': False,
         'name': 1,
@@ -151,7 +152,9 @@ def user_data():
         'title': 'Аккаунт',
         'count_win': user.count_win,
         'count': user.count,
-        'user_list': user_list
+        'user_list': user_list,
+        'name_user': f'{user.name}({user.count_win})',
+        'place': place
     }
 
     if request.access_route[-1] in client_tuple.keys():
