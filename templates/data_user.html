@@ -9,8 +9,25 @@
             {{ text_me }}
         </div>
     </div>
-</div>
-<hr class="line-dividing">
-<a class="btn btn-danger" href="/out">Выход</a>
+    <h2>Результаты🏆</h2>
+    <div class="count-game">
+        <div>
+            <p style="display: inline;">Всего игр: {{ count }}</p>
 
+            <p style="display: inline;">Игры🏆: {{ count_win }}</p>
+        </div>
+    </div>
+
+</div>
+<div class="lower-panel">
+    <p class="button-data-user">
+        <a class="btn btn-success" href="/edit">Редактировать</a>
+    </p>
+    <p class="button-data-user">
+        <a class="btn btn-primary" href="/">Меню</a>
+    </p>
+    <p class="button-data-user">
+        <a class="btn btn-danger" href="/out">Выход</a>
+    </p>
+</div>
 {% endblock %}

@@ -61,12 +61,26 @@ p
 }
 .data-user
 {
-    background-color: #0c114f;
+    background-color: #111111;
     padding: 10px;
-    border: 10px outset blue;
+    border: 10px outset black;
     border-radius: 15px;
+    min-height: 500px;
+    margin: 5px;
 }
 .line-dividing
 {
     border: 2px solid black;
+}
+.lower-panel
+{
+    padding: 10px;
+    margin: 10px;
+    color: #373737;
+}
+.count-game
+{
+    border: 10px outset black;
+    border-radius: 15px;
+    background-color: #111111;
 }

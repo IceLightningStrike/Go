@@ -137,11 +137,15 @@ def user_data():
     ip_address = request.access_route[-1]
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
+    # count_win
+    # count
     param = {
         'name_is_exist': False,
         'name': 1,
         "text_me": user.about,
-        'title': 'Аккаунт'
+        'title': 'Аккаунт',
+        'count_win': user.count_win,
+        'count': user.count
     }
 
     if request.access_route[-1] in client_tuple.keys():

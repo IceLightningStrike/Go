@@ -18,8 +18,8 @@ class User(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    count_win = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)    
+    count_win = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, default=0)
+    count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, default=0)
 
     def __repr__(self):
         return f"User: {self.name}, id_user: {self.id}, email: {self.email}"
