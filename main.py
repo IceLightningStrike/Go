@@ -5,9 +5,9 @@ from field_picture_drawing import update_board_picture
 from preparing import *
 from go import Go
 
-from random import randint
+from random import choice, randint
+from string import printable
 
-from flask import Flask, render_template, redirect, request, make_response, session
 from data import db_session
 from data.users import User
 from data.client import Client
@@ -16,8 +16,8 @@ from forms.login_form import LoginForm
 from forms.register_form import RegisterForm
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = ''.join([choice(printable) for _ in range(randint(10, 15))])
 
-app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -26,6 +26,7 @@ db_session.global_init('db/users.db')
 client_tuple = {
     '127.0.0.1': [1, 'Test', False]
 }
+
 
 
 @login_manager.user_loader
@@ -163,6 +164,8 @@ def user_data():
 
 @app.route('/trigger_function', methods=['POST'])
 def trigger_function():
+    print(make_response().headers)
+
     if request.method == 'POST':
         game_number = int(request.form["game_number"])
         ip_address = request.access_route[-1]
@@ -210,7 +213,7 @@ def game_field() -> str:
     for key in range(1, COUNT_OF_PLAY_FUNCTIONS + 1):
         if games_dictionary[key] is None:
             games_dictionary[key] = {
-                "game": Go(9),
+                "game": Go(19),
                 "player_1": ip_address,
                 "player_2": None
             }

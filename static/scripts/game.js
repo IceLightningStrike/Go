@@ -19,7 +19,7 @@ function postData(input_coordinates, input_size) {
             coordinates: input_coordinates,
             size: input_size
         },
-        success: callbackFunc,
+        success: callbackFunc
     });
 }
 
@@ -48,7 +48,7 @@ setInterval(function UpdatePicture() {
     counter++;
 
     img = new Image();
-    img.src = "/static/game_links/" + game_number + "/game_picture.jpeg?" + counter;
+    img.src = "/static/game_links/" + game_number + "/game_picture.jpeg?counter=" + counter;
     img.onload = function(){
         ctx.drawImage(img, 0, 0, canvas_object.width, canvas_object.height);
     }
