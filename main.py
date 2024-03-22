@@ -1,29 +1,40 @@
-from flask import Flask, render_template, request, redirect, make_response
-from settings import HOST, PORT, COUNT_OF_PLAY_FUNCTIONS
+from settings import HOST, PORT
 
-from field_picture_drawing import update_board_picture
-from preparing import *
-from go import Go
+from flask import Flask, render_template, request, redirect
+from flask import Response
 
-from random import randint
+from flask_login import LoginManager, login_user
 
-from flask import Flask, render_template, redirect, request, make_response, session
+from forms.register_form import RegisterForm
+from forms.login_form import LoginForm
+
 from data import db_session
 from data.users import User
 from data.client import Client
-from flask_login import LoginManager, login_user
-from forms.login_form import LoginForm
-from forms.register_form import RegisterForm
+
+from field_picture_drawing import update_board_picture
+from go import Go
+
+from os import mkdir
 
 app = Flask(__name__)
-
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-db_session.global_init('db/users.db')
+db_session.global_init('db/players.db')
 
-client_tuple = {'127.0.0.1': [2, 'Test', False]}
+client_tuple = {
+    '127.0.0.1': [2, 'Test', False]
+}
+
+games_list = [None]
+
+try:
+    mkdir("static/game_links")
+except FileExistsError:
+    pass
 
 
 @login_manager.user_loader
@@ -32,42 +43,20 @@ def load_user(user_id):
     return db_sess.query(User).get(user_id)
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route("/")
+def greeting() -> str:
     ip_address = request.access_route[-1]
-
     param = {
         'name_is_exist': False,
-        'name': 1
+        'name': 1,
+        'title': 'Главное меню'
     }
 
-    if ip_address in client_tuple:
+    if request.access_route[-1] in client_tuple.keys():
         param['name_is_exist'] = True
         param['name'] = client_tuple[ip_address][1]
 
-    form = LoginForm()
-
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
-
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-
-            client_tuple[request.access_route[-1]] = [user.id, user.name, False]
-
-            print(client_tuple)
-
-            return redirect("/")
-
-        return render_template(
-            'login.html',
-            message="Неправильный логин или пароль",
-            form=form,
-            **param
-        )
-
-    return render_template('login.html', title='Авторизация', form=form, **param)
+    return render_template("greeting.html", **param)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -87,7 +76,7 @@ def reqister():
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template(
-                'register.html',
+                template_name_or_list='register.html',
                 title='Регистрация',
                 form=form,
                 message="Пароли не совпадают",
@@ -97,7 +86,7 @@ def reqister():
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template(
-                'register.html',
+                template_name_or_list='register.html',
                 title='Регистрация',
                 form=form,
                 message="Такой пользователь уже есть",
@@ -116,11 +105,56 @@ def reqister():
 
         return redirect("/")
 
-    return render_template('register.html', title='Регистрация', form=form, **param)
+    return render_template(
+        template_name_or_list='register.html',
+        title='Регистрация',
+        form=form,
+        **param
+    )
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login() -> str | Response:
+    ip_address = request.access_route[-1]
+
+    param = {
+        'name_is_exist': False,
+        'name': 1
+    }
+
+    if ip_address in client_tuple:
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+
+        if user and user.check_password(form.password.data):
+            login_user(user=user, remember=form.remember_me.data)
+            client_tuple[request.access_route[-1]] = [user.id, user.name, False]
+
+            return redirect("/")
+        
+        return render_template(
+            template_name_or_list='login.html',
+            message="Неправильный логин или пароль",
+            form=form,
+            **param
+        )
+
+    return render_template(
+        template_name_or_list='login.html',
+        title='Авторизация',
+        form=form,
+        **param
+    )
 
 
 @app.route('/out')
-def out():
+def out() -> Response:
     ip_address = request.access_route[-1]
 
     try:
@@ -128,22 +162,23 @@ def out():
     except KeyError as error:
         print(repr(error))
 
-    print(client_tuple)
     return redirect("/")
 
 
 @app.route('/user_data')
-def user_data():
+def user_data() -> str:
     ip_address = request.access_route[-1]
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
     # count_win
     # count
-    user_list = []
-    for elem in db_sess.query(User).all():
-        user_list.append([elem.name, elem.count_win])
-    user_list.sort(key=lambda x: x[-1], reverse=True)
-    user_list = [f'{i[0]}({i[-1]})' for i in user_list]
+    user_list = [f"{name}({count})" for (name, count) in sorted(
+        [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
+        key=lambda x: x[-1],
+        reverse=True
+        )
+    ]
+
     place = user_list.index(f'{user.name}({user.count_win})') + 1
     param = {
         'name_is_exist': False,
@@ -157,50 +192,31 @@ def user_data():
         'place': place
     }
 
-    if request.access_route[-1] in client_tuple.keys():
+    if ip_address in client_tuple:
         param['name_is_exist'] = True
         param['name'] = client_tuple[ip_address][1]
         param['play_game'] = True
 
-    return render_template("data_user.html", **param)
+    return render_template(
+        template_name_or_list="data_user.html",
+        **param
+    )
 
 
-def creat_similar_game_functions() -> None:
-    for play_number in range(1, COUNT_OF_PLAY_FUNCTIONS + 1):
-        with open("game_function_pattern.txt", "r", encoding="UTF-8") as file:
-            exec(file.read().format(*((play_number,) * 8)))
-
-
-@app.route("/")
-def greeting() -> str:
-    ip_address = request.access_route[-1]
-    param = {
-        'name_is_exist': False,
-        'name': 1,
-        'title': 'Главное меню'
-    }
-
-    if request.access_route[-1] in client_tuple.keys():
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
-
-    return render_template("greeting.html", **param)
-
-
-@app.route('/trigger_function', methods=['POST'])
-def trigger_function():
+@app.route('/game_callback_answer', methods=['POST'])
+def trigger_function() -> str:
     if request.method == 'POST':
         game_number = int(request.form["game_number"])
         ip_address = request.access_route[-1]
 
         first, second = [
             (
-                    ip_address == games_dictionary[game_number]["player_1"] and
-                    games_dictionary[game_number]["game"].turn == "black"
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
             ),
             (
-                    ip_address == games_dictionary[game_number]["player_2"] and
-                    games_dictionary[game_number]["game"].turn == "white"
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -209,19 +225,19 @@ def trigger_function():
 
         site_field_width, site_field_height = map(int, map(float, request.form["size"].split(";")))
 
-        field_width = site_field_width // (games_dictionary[game_number]["game"].width + 3)
-        field_height = site_field_height // (games_dictionary[game_number]["game"].height + 3)
+        field_width = site_field_width // (games_list[game_number]["game"].width + 3)
+        field_height = site_field_height // (games_list[game_number]["game"].height + 3)
 
         x, y = map(int, map(float, request.form["coordinates"].split(";")))
         x, y = x - field_width * 2, y - field_height * 2
         x, y = (x + field_width // 2) // field_width, (y + field_height // 2) // field_height
 
         try:
-            games_dictionary[game_number]["game"].move(
-                f"{games_dictionary[game_number]['game'].height - y}" +
-                f"{games_dictionary[game_number]['game'].alphabet[x]}"
+            games_list[game_number]["game"].move(
+                f"{games_list[game_number]['game'].height - y}" +
+                f"{games_list[game_number]['game'].alphabet[x]}"
             )
-            update_board_picture(game_number, games_dictionary[game_number]["game"])
+            update_board_picture(game_number, games_list[game_number]["game"])
         except Exception as error:
             print(repr(error))
 
@@ -232,20 +248,38 @@ def trigger_function():
 @app.route("/game")
 def game_field() -> str:
     ip_address = request.access_route[-1]
+    game_number = len(games_list)
 
-    for key in range(1, COUNT_OF_PLAY_FUNCTIONS + 1):
-        if games_dictionary[key] is None:
-            games_dictionary[key] = {
-                "game": Go(9),
-                "player_1": ip_address,
-                "player_2": None
-            }
-            update_board_picture(key, games_dictionary[key]["game"])
-            return redirect(f"game/{key}")
+    mkdir(f"static/game_links/{game_number}")
+    games_list.append({
+        "game": Go(9),
+        "player_1": ip_address,
+        "player_2": None
+    })
 
-    return render_template("no_memory_for_fields_error.html")
+    update_board_picture(game_number, games_list[game_number]["game"])
+
+    return redirect(f"/game/{game_number}")
+
+
+@app.route(f"/game/<int:game_number>")
+def basic_game_function(game_number: int) -> str:
+    ip_address = request.access_route[-1]
+    
+    if not (1 <= game_number <= len(games_list)):
+        return render_template(
+            "basic_error_messages.html",
+            messages=[
+                "Game ID is incorrect!"
+            ]
+        )
+
+    if games_list[game_number]["player_2"] is None:
+        if ip_address != games_list[game_number]["player_1"]:
+            games_list[game_number]["player_2"] = ip_address
+
+    return render_template("game.html")
 
 
 if __name__ == "__main__":
-    creat_similar_game_functions()
     app.run(host=HOST, port=PORT)

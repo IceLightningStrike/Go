@@ -13,7 +13,7 @@ function getCursorPosition(canvas, event) {
 function postData(input_coordinates, input_size) {
     $.ajax({
         type: "POST",
-        url: "/trigger_function",
+        url: "/game_callback_answer",
         data: {
             game_number: game_number,
             coordinates: input_coordinates,
