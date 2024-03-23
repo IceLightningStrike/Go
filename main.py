@@ -200,21 +200,25 @@ def user_data() -> str:
         **param
     )
 
+@app.route("/leader_board")
+def leader_board() -> None:
+    pass
+
 
 @app.route('/game_callback_answer', methods=['POST'])
-def trigger_function() -> str:
+def game_callback_answer() -> str:
     if request.method == 'POST':
         game_number = int(request.form["game_number"])
         ip_address = request.access_route[-1]
 
         first, second = [
             (
-                    ip_address == games_list[game_number]["player_1"] and
-                    games_list[game_number]["game"].turn == "black"
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
             ),
             (
-                    ip_address == games_list[game_number]["player_2"] and
-                    games_list[game_number]["game"].turn == "white"
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -248,9 +252,13 @@ def game_field() -> str:
     ip_address = request.access_route[-1]
     game_number = len(games_list)
 
-    mkdir(f"static/game_links/{game_number}")
+    try:
+        mkdir(f"static/game_links/{game_number}")
+    except FileExistsError:
+        pass
+
     games_list.append({
-        "game": Go(9),
+        "game": Go(19),
         "player_1": ip_address,
         "player_2": None
     })
