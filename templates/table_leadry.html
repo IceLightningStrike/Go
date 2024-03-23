@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Таблица лидеров</h2>
+    <div class="leaderboard">
+        <ul class="list-users">
+            {% for user in user_list %}
+            {% if user == name_user %}
+            <li style="color: yellow;">{{ loop.index }} - {{ user }}</li>
+            {% else %}
+            <li style="color: white;">{{ loop.index }} - {{ user }}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}

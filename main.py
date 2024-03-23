@@ -101,6 +101,10 @@ def reqister():
         db_sess.add(user)
         db_sess.commit()
 
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        client_tuple[request.access_route[-1]] = [user.id, user.name, False]
+
         return redirect("/")
 
     return render_template(
@@ -200,9 +204,36 @@ def user_data() -> str:
         **param
     )
 
+
 @app.route("/leader_board")
 def leader_board() -> None:
-    pass
+    ip_address = request.access_route[-1]
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
+    # count_win
+    # count
+    user_list = [f"{name}({count})" for (name, count) in sorted(
+        [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
+        key=lambda x: x[-1],
+        reverse=True
+    )
+                 ]
+
+    place = user_list.index(f'{user.name}({user.count_win})') + 1
+    param = {
+        'name_is_exist': False,
+        'name': 1,
+        "text_me": user.about,
+        'title': 'Аккаунт',
+        'count_win': user.count_win,
+        'count': user.count,
+        'user_list': user_list,
+        'name_user': f'{user.name}({user.count_win})'
+    }
+    return render_template(
+        template_name_or_list="table_leadry.html",
+        **param
+    )
 
 
 @app.route('/game_callback_answer', methods=['POST'])
@@ -213,12 +244,12 @@ def game_callback_answer() -> str:
 
         first, second = [
             (
-                ip_address == games_list[game_number]["player_1"] and
-                games_list[game_number]["game"].turn == "black"
+                    ip_address == games_list[game_number]["player_1"] and
+                    games_list[game_number]["game"].turn == "black"
             ),
             (
-                ip_address == games_list[game_number]["player_2"] and
-                games_list[game_number]["game"].turn == "white"
+                    ip_address == games_list[game_number]["player_2"] and
+                    games_list[game_number]["game"].turn == "white"
             )
         ]
 

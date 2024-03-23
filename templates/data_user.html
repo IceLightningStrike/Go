@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="btn-game">
-    <a class="btn btn-info" href="/game">Играть</a>
-</div>
 <div>
     <h2>О себе</h2>
     <div class="data-user">
@@ -21,28 +18,20 @@
             <p style="display: inline;">Место: {{ place }}</p>
         </div>
     </div>
-    <h2>Таблица лидеров</h2>
-    <div class="leaderboard">
-        <ul class="list-users">
-            {% for user in user_list %}
-            {% if user == name_user %}
-            <li style="color: yellow;">{{ loop.index }} - {{ user }}</li>
-            {% else %}
-            <li style="color: white;">{{ loop.index }} - {{ user }}</li>
-            {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
+
 </div>
 <div class="lower-panel">
+    <p class="button-data-user">
+        <a class="btn btn-warning" href="/leader_board">Таблица лидеров</a>
+    </p>
     <p class="button-data-user">
         <a class="btn btn-success" href="/edit">Редактировать</a>
     </p>
     <p class="button-data-user">
-        <a class="btn btn-primary" href="/">Меню</a>
+        <a class="btn btn-danger" href="/out">Выход</a>
     </p>
     <p class="button-data-user">
-        <a class="btn btn-danger" href="/out">Выход</a>
+        <a class="btn btn-danger" href="/out">Удалить аккаунт</a>
     </p>
 </div>
 <div class="authors">
