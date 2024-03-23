@@ -135,7 +135,7 @@ def login() -> str | Response:
             client_tuple[request.access_route[-1]] = [user.id, user.name, False]
 
             return redirect("/")
-        
+
         return render_template(
             template_name_or_list='login.html',
             message="Неправильный логин или пароль",
@@ -174,8 +174,8 @@ def user_data() -> str:
         [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
         key=lambda x: x[-1],
         reverse=True
-        )
-    ]
+    )
+                 ]
 
     place = user_list.index(f'{user.name}({user.count_win})') + 1
     param = {
@@ -209,12 +209,12 @@ def trigger_function() -> str:
 
         first, second = [
             (
-                ip_address == games_list[game_number]["player_1"] and
-                games_list[game_number]["game"].turn == "black"
+                    ip_address == games_list[game_number]["player_1"] and
+                    games_list[game_number]["game"].turn == "black"
             ),
             (
-                ip_address == games_list[game_number]["player_2"] and
-                games_list[game_number]["game"].turn == "white"
+                    ip_address == games_list[game_number]["player_2"] and
+                    games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -263,7 +263,7 @@ def game_field() -> str:
 @app.route(f"/game/<int:game_number>")
 def basic_game_function(game_number: int) -> str:
     ip_address = request.access_route[-1]
-    
+
     if not (1 <= game_number <= len(games_list)):
         return render_template(
             "basic_error_messages.html",
