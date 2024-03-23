@@ -25,9 +25,7 @@ login_manager.init_app(app)
 
 db_session.global_init('db/players.db')
 
-client_tuple = {
-    '127.0.0.1': [2, 'Test', False]
-}
+client_tuple = {}
 
 games_list = [None]
 
