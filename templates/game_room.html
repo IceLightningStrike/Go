@@ -2,13 +2,23 @@
 
 {% block content %}
 
-<div>
-    <form >
-        <input type="text" id="number">
-        <p>{{ message }}</p>
-    </form>
-    <a id="play1" type="submit" class="btn btn-primary" href="/game_room">Присоединиться к игре🚪</a>
-    <a id="play2" type="submit" class="btn btn-warning" href="/game_room">Посмотреть игру👀</a>
-</div>
 
+<div class="form-register">
+    <div class="form-login-register">
+        <h1>Комната</h1>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.size_board.label }}<br>
+                {{ form.size_board(class="form-control") }}<br>
+                {% for error in form.size_board.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+            {% endfor %}
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            <div class="message">{{ message }}</div>
+        </form>
+    </div>
+</div>
 {% endblock %}

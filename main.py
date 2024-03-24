@@ -9,6 +9,7 @@ from forms.register_form import RegisterForm
 from forms.login_form import LoginForm
 from forms.create_game import CreateGame
 from forms.del_account import DelAccount
+from forms.game_join import GameJoin
 
 from data import db_session
 from data.users import User
@@ -270,28 +271,26 @@ def game_room():
         param['name_is_exist'] = True
         param['name'] = client_tuple[ip_address][1]
 
-    form = LoginForm()
+    form = GameJoin()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        if int(form.size_board.data) < len(games_list):
+            print(form.size_board.data, len(games_list))
 
-        if user and user.check_password(form.password.data):
-            login_user(user=user, remember=form.remember_me.data)
-            client_tuple[request.access_route[-1]] = [user.id, user.name, False]
-
-            return redirect("/")
+            return redirect(f"/game/{form.size_board.data}")
 
         return render_template(
             template_name_or_list='game_room.html',
             message="Нет такой комнаты",
             title='Присоединиться к комнате',
+            form=form,
             **param
         )
 
     return render_template(
         template_name_or_list='game_room.html',
         title='Присоединиться к комнате',
+        form=form,
         **param
     )
 
