@@ -1,18 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>Game of Go</title>
-        <link rel="stylesheet" href="/static/css/game_field.css">
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
-    </head>
+{% extends "base.html" %}
 
-    <body>
-        <div id="content"></div>
-        <canvas id="game_canvas"></canvas>
+{% block content %}
+<head>
+    <title>Game of Go</title>
+    <link rel="stylesheet" href="/static/css/game_field.css">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate"/>
+</head>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script type="text/javascript" src="/static/scripts/game.js"></script>
-    </body>
-</html>
+<body>
+<div id="content"></div>
+{% if player_is_exist %}
+<div class="names">
+    <h1>First player: {{ name_player }}</h1>
+    <h1>Your name: {{ name }}</h1>
+</div>
+<h2>
+    Number room: {{ number_room }}
+</h2>
+{% endif %}
+<canvas id="game_canvas"></canvas>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="/static/scripts/game.js"></script>
+</body>
+{% endblock %}

@@ -9,3 +9,8 @@ canvas {
     left: 0;
     right: 0;
 }
+.names
+{
+    display: flex;
+    justify-content: space-between;
+}

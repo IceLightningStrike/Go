@@ -7,6 +7,8 @@ from flask_login import LoginManager, login_user
 
 from forms.register_form import RegisterForm
 from forms.login_form import LoginForm
+from forms.create_game import CreateGame
+from forms.del_account import DelAccount
 
 from data import db_session
 from data.users import User
@@ -237,39 +239,62 @@ def leader_board() -> None:
 
 
 @app.route("/game_create", methods=['GET', 'POST'])
-def leader_board() -> None:
+def game_create() -> str:
     ip_address = request.access_route[-1]
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
-    # count_win
-    # count
-    user_list = [f"{name}({count})" for (name, count) in sorted(
-        [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
-        key=lambda x: x[-1],
-        reverse=True
-    )
-                 ]
-
-    place = user_list.index(f'{user.name}({user.count_win})') + 1
+    form = CreateGame()
     param = {
         'name_is_exist': False,
         'name': 1,
-        "text_me": user.about,
-        'title': 'Аккаунт',
-        'count_win': user.count_win,
-        'count': user.count,
-        'user_list': user_list,
-        'name_user': f'{user.name}({user.count_win})'
+        'title': 'Создать комнату',
+        'form': form
     }
+    if request.access_route[-1] in client_tuple.keys():
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+    if form.validate_on_submit():
+        pass
+
+    return render_template(template_name_or_list="game_create.html", **param)
+
+
+@app.route('/game_room', methods=['GET', 'POST'])
+def game_room():
+    ip_address = request.access_route[-1]
+
+    param = {
+        'name_is_exist': False,
+        'name': 1
+    }
+
+    if ip_address in client_tuple:
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+
+        if user and user.check_password(form.password.data):
+            login_user(user=user, remember=form.remember_me.data)
+            client_tuple[request.access_route[-1]] = [user.id, user.name, False]
+
+            return redirect("/")
+
+        return render_template(
+            template_name_or_list='game_room.html',
+            message="Нет такой комнаты",
+            title='Присоединиться к комнате',
+            **param
+        )
+
     return render_template(
-        template_name_or_list="table_leadry.html",
+        template_name_or_list='game_room.html',
+        title='Присоединиться к комнате',
         **param
     )
 
-
-@app.route('/game_room')
-def game_room():
-    pass
 
 @app.route('/game_callback_answer', methods=['POST'])
 def game_callback_answer() -> str:
@@ -334,6 +359,48 @@ def game_field() -> str:
     return redirect(f"/game/{game_number}")
 
 
+@app.route("/del", methods=['GET', 'POST'])
+def del_account():
+    ip_address = request.access_route[-1]
+
+    param = {
+        'name_is_exist': False,
+        'name': 1
+    }
+
+    if ip_address in client_tuple:
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
+    form = DelAccount()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+
+        if user and user.check_password(form.password.data):
+            db_sess.query(User).filter(User.id == client_tuple[request.access_route[-1]][0]).delete()
+            db_sess.commit()
+            del client_tuple[request.access_route[-1]]
+
+            return redirect("/")
+
+        return render_template(
+            template_name_or_list='del_account.html',
+            message="Неправильный логин или пароль(Подтвердите данные)",
+            form=form,
+            **param
+        )
+
+    return render_template(
+        template_name_or_list='del_account.html',
+        title='Удаление аккаунта!!!',
+        form=form,
+        message="Подтвердите данные",
+        **param
+    )
+
+
 @app.route(f"/game/<int:game_number>")
 def basic_game_function(game_number: int) -> str:
     ip_address = request.access_route[-1]
@@ -350,7 +417,31 @@ def basic_game_function(game_number: int) -> str:
         if ip_address != games_list[game_number]["player_1"]:
             games_list[game_number]["player_2"] = ip_address
 
-    return render_template("game.html")
+    ip_address = request.access_route[-1]
+    id_plays = [games_list[game_number]["player_1"], games_list[game_number]["player_2"]]
+    id_plays.pop(id_plays.index(ip_address))
+    param = {
+        'name_is_exist': False,
+        'name': 1,
+        'title': 'Go',
+        'player_is_exist': True,
+        'name_player': None,
+        'number_room': game_number
+    }
+
+    if request.access_route[-1] in client_tuple.keys():
+        param['name_is_exist'] = True
+        param['name'] = client_tuple[ip_address][1]
+
+    if not id_plays[0] is None:
+        param['player_is_exist'] = True
+        param['name_player'] = client_tuple[id_plays[1]]
+    # [user.id, user.name, False]
+
+    print(param)
+    print(games_list)
+
+    return render_template("game.html", **param)
 
 
 if __name__ == "__main__":

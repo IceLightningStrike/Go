@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div>
+    <form >
+        <input type="text" id="number">
+        <p>{{ message }}</p>
+    </form>
+    <a id="play1" type="submit" class="btn btn-primary" href="/game_room">Присоединиться к игре🚪</a>
+    <a id="play2" type="submit" class="btn btn-warning" href="/game_room">Посмотреть игру👀</a>
+</div>
+
+{% endblock %}
