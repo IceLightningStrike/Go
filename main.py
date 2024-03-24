@@ -236,6 +236,41 @@ def leader_board() -> None:
     )
 
 
+@app.route("/game_create", methods=['GET', 'POST'])
+def leader_board() -> None:
+    ip_address = request.access_route[-1]
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
+    # count_win
+    # count
+    user_list = [f"{name}({count})" for (name, count) in sorted(
+        [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
+        key=lambda x: x[-1],
+        reverse=True
+    )
+                 ]
+
+    place = user_list.index(f'{user.name}({user.count_win})') + 1
+    param = {
+        'name_is_exist': False,
+        'name': 1,
+        "text_me": user.about,
+        'title': 'Аккаунт',
+        'count_win': user.count_win,
+        'count': user.count,
+        'user_list': user_list,
+        'name_user': f'{user.name}({user.count_win})'
+    }
+    return render_template(
+        template_name_or_list="table_leadry.html",
+        **param
+    )
+
+
+@app.route('/game_room')
+def game_room():
+    pass
+
 @app.route('/game_callback_answer', methods=['POST'])
 def game_callback_answer() -> str:
     if request.method == 'POST':

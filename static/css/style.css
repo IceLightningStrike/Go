@@ -114,3 +114,8 @@ p
     padding-bottom: 0px;
     margin: 0px;
 }
+.button-game
+{
+    display: flex;
+    justify-content: space-around;
+}
