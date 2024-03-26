@@ -1,11 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<form action="" method="post">
-    {{ form.size_board }}
-    {{ form.submit }}
-</form>
-
+<div class="form-register">
+    <div class="form-login-register">
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <p class="checkbox">
+                {{ form.size_board.label }}<br>
+                {{ form.size_board(class="checkbox")}}<br>
+                {% for error in form.size_board.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+            {% endfor %}
+            </p>
+            <p class="checkbox">
+                {{ form.black_white.label }}<br>
+                {{ form.black_white(class="checkbox")}}<br>
+                {% for error in form.black_white.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+            {% endfor %}
+            </p>
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            <div class="message">{{ message }}</div>
+        </form>
+    </div>
+</div>
 
 {% endblock %}

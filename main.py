@@ -253,8 +253,29 @@ def game_create() -> str:
         param['name_is_exist'] = True
         param['name'] = client_tuple[ip_address][1]
     if form.validate_on_submit():
-        pass
-
+        list_size = [0, 9, 13, 19]
+        size_board = list_size[int(form.size_board.data)]
+        print(size_board)
+        if int(form.black_white.data) == 1:
+            games_list.append({
+                "game": Go(size_board),
+                "player_1": ip_address,
+                "player_2": None,
+                "room_open": True
+            })
+        else:
+            games_list.append({
+                "game": Go(size_board),
+                "player_1": None,
+                "player_2": ip_address,
+                "room_open": True
+            })
+        try:
+            mkdir(f"static/game_links/{len(games_list) - 1}")
+        except FileExistsError:
+            pass
+        update_board_picture(len(games_list) - 1, games_list[len(games_list) - 1]["game"])
+        return redirect(f"/game/{len(games_list) - 1}")
     return render_template(template_name_or_list="game_create.html", **param)
 
 
@@ -350,7 +371,8 @@ def game_field() -> str:
     games_list.append({
         "game": Go(19),
         "player_1": ip_address,
-        "player_2": None
+        "player_2": None,
+        "room_open": True
     })
 
     update_board_picture(game_number, games_list[game_number]["game"])
