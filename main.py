@@ -15,7 +15,7 @@ from data import db_session
 from data.users import User
 from data.client import Client
 
-from field_picture_drawing import update_board_picture
+from field_picture_drawing import update_board_picture, save_game_replay
 from go import Go
 
 from os import mkdir
@@ -27,9 +27,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 db_session.global_init('db/players.db')
+db_sess = db_session.create_session()
 
-client_tuple = {}
-
+clients_dictionary = dict()
 games_list = [None]
 
 try:
@@ -40,37 +40,36 @@ except FileExistsError:
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
 
 @app.route("/")
 def greeting() -> str:
     ip_address = request.access_route[-1]
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1,
         'title': 'Главное меню'
     }
 
-    if request.access_route[-1] in client_tuple.keys():
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
 
-    return render_template("greeting.html", **param)
+    return render_template("greeting.html", **parametrs)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     ip_address = request.access_route[-1]
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1
     }
 
-    if ip_address in client_tuple:
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
 
     form = RegisterForm()
 
@@ -81,17 +80,16 @@ def reqister():
                 title='Регистрация',
                 form=form,
                 message="Пароли не совпадают",
-                **param
+                **parametrs
             )
 
-        db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template(
                 template_name_or_list='register.html',
                 title='Регистрация',
                 form=form,
                 message="Такой пользователь уже есть",
-                **param
+                **parametrs
             )
 
         user = User(
@@ -101,12 +99,12 @@ def reqister():
         )
 
         user.set_password(form.password.data)
+
         db_sess.add(user)
         db_sess.commit()
 
-        db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
-        client_tuple[request.access_route[-1]] = [user.id, user.name, False]
+        clients_dictionary[request.access_route[-1]] = [user.id, user.name, False]
 
         return redirect("/")
 
@@ -114,7 +112,7 @@ def reqister():
         template_name_or_list='register.html',
         title='Регистрация',
         form=form,
-        **param
+        **parametrs
     )
 
 
@@ -122,24 +120,23 @@ def reqister():
 def login() -> str | Response:
     ip_address = request.access_route[-1]
 
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1
     }
 
-    if ip_address in client_tuple:
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+    if ip_address in clients_dictionary:
+        parametrs['name_is_exist'] = True
+        parametrs['name'] = clients_dictionary[ip_address][1]
 
     form = LoginForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
 
         if user and user.check_password(form.password.data):
             login_user(user=user, remember=form.remember_me.data)
-            client_tuple[request.access_route[-1]] = [user.id, user.name, False]
+            clients_dictionary[request.access_route[-1]] = [user.id, user.name, False]
 
             return redirect("/")
 
@@ -147,14 +144,14 @@ def login() -> str | Response:
             template_name_or_list='login.html',
             message="Неправильный логин или пароль",
             form=form,
-            **param
+            **parametrs
         )
 
     return render_template(
         template_name_or_list='login.html',
         title='Авторизация',
         form=form,
-        **param
+        **parametrs
     )
 
 
@@ -163,7 +160,7 @@ def out() -> Response:
     ip_address = request.access_route[-1]
 
     try:
-        del client_tuple[ip_address]
+        del clients_dictionary[ip_address]
     except KeyError as error:
         print(repr(error))
 
@@ -173,19 +170,17 @@ def out() -> Response:
 @app.route('/user_data')
 def user_data() -> str:
     ip_address = request.access_route[-1]
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
-    # count_win
-    # count
+
+    user = db_sess.query(User).filter(User.id == clients_dictionary[ip_address][0]).first()
     user_list = [f"{name}({count})" for (name, count) in sorted(
         [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
         key=lambda x: x[-1],
         reverse=True
-    )
-                 ]
+        )
+    ]
 
     place = user_list.index(f'{user.name}({user.count_win})') + 1
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1,
         "text_me": user.about,
@@ -197,33 +192,30 @@ def user_data() -> str:
         'place': place
     }
 
-    if ip_address in client_tuple:
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
-        param['play_game'] = True
+    if ip_address in clients_dictionary:
+        parametrs['name_is_exist'] = True
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['play_game'] = True
 
     return render_template(
         template_name_or_list="data_user.html",
-        **param
+        **parametrs
     )
 
 
 @app.route("/leader_board")
 def leader_board() -> None:
     ip_address = request.access_route[-1]
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == client_tuple[ip_address][0]).first()
-    # count_win
-    # count
+
+    user = db_sess.query(User).filter(User.id == clients_dictionary[ip_address][0]).first()
     user_list = [f"{name}({count})" for (name, count) in sorted(
         [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
         key=lambda x: x[-1],
         reverse=True
     )
-                 ]
+    ]
 
-    place = user_list.index(f'{user.name}({user.count_win})') + 1
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1,
         "text_me": user.about,
@@ -233,64 +225,63 @@ def leader_board() -> None:
         'user_list': user_list,
         'name_user': f'{user.name}({user.count_win})'
     }
+
     return render_template(
         template_name_or_list="table_leadry.html",
-        **param
+        **parametrs
     )
 
 
 @app.route("/game_create", methods=['GET', 'POST'])
 def game_create() -> str:
     ip_address = request.access_route[-1]
+    game_number = len(games_list)
+
     form = CreateGame()
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1,
         'title': 'Создать комнату',
         'form': form
     }
-    if request.access_route[-1] in client_tuple.keys():
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+
+    if request.access_route[-1] in clients_dictionary.keys():
+        parametrs['name_is_exist'] = True
+        parametrs['name'] = clients_dictionary[ip_address][1]
+
     if form.validate_on_submit():
         list_size = [0, 9, 13, 19]
         size_board = list_size[int(form.size_board.data)]
-        print(size_board)
-        if int(form.black_white.data) == 1:
-            games_list.append({
-                "game": Go(size_board),
-                "player_1": ip_address,
-                "player_2": None,
-                "room_open": True
-            })
-        else:
-            games_list.append({
-                "game": Go(size_board),
-                "player_1": None,
-                "player_2": ip_address,
-                "room_open": True
-            })
+        
+        games_list.append({
+            "game": Go(size_board),
+            "player_1": ip_address,
+            "player_2": None if int(form.black_white.data) == 1 else True,
+            "room_open": True if int(form.black_white.data) == 1 else None
+        })
+
         try:
-            mkdir(f"static/game_links/{len(games_list) - 1}")
+            mkdir(f"static/game_links/{game_number}")
         except FileExistsError:
             pass
-        update_board_picture(len(games_list) - 1, games_list[len(games_list) - 1]["game"])
-        return redirect(f"/game/{len(games_list) - 1}")
-    return render_template(template_name_or_list="game_create.html", **param)
+        
+        update_board_picture(games_list[game_number]["game"], game_number)
+        return redirect(f"/game/{game_number}")
+    return render_template(template_name_or_list="game_create.html", **parametrs)
 
 
 @app.route('/game_room', methods=['GET', 'POST'])
 def game_room():
     ip_address = request.access_route[-1]
 
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1
     }
 
-    if ip_address in client_tuple:
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+    if ip_address in clients_dictionary:
+        parametrs['name_is_exist'] = True
+        parametrs['name'] = clients_dictionary[ip_address][1]
 
     form = GameJoin()
 
@@ -305,14 +296,14 @@ def game_room():
             message="Нет такой комнаты",
             title='Присоединиться к комнате',
             form=form,
-            **param
+            **parametrs
         )
 
     return render_template(
         template_name_or_list='game_room.html',
         title='Присоединиться к комнате',
         form=form,
-        **param
+        **parametrs
     )
 
 
@@ -324,12 +315,12 @@ def game_callback_answer() -> str:
 
         first, second = [
             (
-                    ip_address == games_list[game_number]["player_1"] and
-                    games_list[game_number]["game"].turn == "black"
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
             ),
             (
-                    ip_address == games_list[game_number]["player_2"] and
-                    games_list[game_number]["game"].turn == "white"
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -350,7 +341,7 @@ def game_callback_answer() -> str:
                 f"{games_list[game_number]['game'].height - y}" +
                 f"{games_list[game_number]['game'].alphabet[x]}"
             )
-            update_board_picture(game_number, games_list[game_number]["game"])
+            update_board_picture(games_list[game_number]["game"], game_number)
         except Exception as error:
             print(repr(error))
 
@@ -358,51 +349,28 @@ def game_callback_answer() -> str:
     return "Error"
 
 
-@app.route("/game")
-def game_field() -> str:
-    ip_address = request.access_route[-1]
-    game_number = len(games_list)
-
-    try:
-        mkdir(f"static/game_links/{game_number}")
-    except FileExistsError:
-        pass
-
-    games_list.append({
-        "game": Go(19),
-        "player_1": ip_address,
-        "player_2": None,
-        "room_open": True
-    })
-
-    update_board_picture(game_number, games_list[game_number]["game"])
-
-    return redirect(f"/game/{game_number}")
-
-
 @app.route("/del", methods=['GET', 'POST'])
 def del_account():
     ip_address = request.access_route[-1]
 
-    param = {
+    parametrs = {
         'name_is_exist': False,
         'name': 1
     }
 
-    if ip_address in client_tuple:
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+    if ip_address in clients_dictionary:
+        parametrs['name_is_exist'] = True
+        parametrs['name'] = clients_dictionary[ip_address][1]
 
     form = DelAccount()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
 
         if user and user.check_password(form.password.data):
-            db_sess.query(User).filter(User.id == client_tuple[request.access_route[-1]][0]).delete()
+            db_sess.query(User).filter(User.id == clients_dictionary[request.access_route[-1]][0]).delete()
             db_sess.commit()
-            del client_tuple[request.access_route[-1]]
+            del clients_dictionary[request.access_route[-1]]
 
             return redirect("/")
 
@@ -410,7 +378,7 @@ def del_account():
             template_name_or_list='del_account.html',
             message="Неправильный логин или пароль(Подтвердите данные)",
             form=form,
-            **param
+            **parametrs
         )
 
     return render_template(
@@ -418,7 +386,7 @@ def del_account():
         title='Удаление аккаунта!!!',
         form=form,
         message="Подтвердите данные",
-        **param
+        **parametrs
     )
 
 
@@ -433,15 +401,27 @@ def basic_game_function(game_number: int) -> str:
                 "Game ID is incorrect!"
             ]
         )
+    
+    if not (games_list[game_number]["player_1"] is None or games_list[game_number]["player_2"] is None):
+        if not (games_list[game_number]["room_open"] is True):
+            return render_template(
+            "basic_error_messages.html",
+            messages=[
+                "This Game is private!",
+                "You can't watch it!"
+            ]
+        )
 
     if games_list[game_number]["player_2"] is None:
         if ip_address != games_list[game_number]["player_1"]:
             games_list[game_number]["player_2"] = ip_address
 
-    ip_address = request.access_route[-1]
-    id_plays = [games_list[game_number]["player_1"], games_list[game_number]["player_2"]]
-    id_plays.pop(id_plays.index(ip_address))
-    param = {
+    if games_list[game_number]["player_1"] == ip_address: 
+        opponent_ip = games_list[game_number]["player_2"]
+    else:
+        opponent_ip = games_list[game_number]["player_1"]
+
+    parametrs = {
         'name_is_exist': False,
         'name': 1,
         'title': 'Go',
@@ -450,19 +430,15 @@ def basic_game_function(game_number: int) -> str:
         'number_room': game_number
     }
 
-    if request.access_route[-1] in client_tuple.keys():
-        param['name_is_exist'] = True
-        param['name'] = client_tuple[ip_address][1]
+    if request.access_route[-1] in clients_dictionary:
+        parametrs['name_is_exist'] = True
+        parametrs['name'] = clients_dictionary[ip_address][1]
 
-    if not id_plays[0] is None:
-        param['player_is_exist'] = True
-        param['name_player'] = client_tuple[id_plays[1]]
-    # [user.id, user.name, False]
+    if not opponent_ip is None:
+        parametrs['player_is_exist'] = True
+        parametrs['name_player'] = clients_dictionary[opponent_ip]
 
-    print(param)
-    print(games_list)
-
-    return render_template("game.html", **param)
+    return render_template("game.html", **parametrs)
 
 
 if __name__ == "__main__":
