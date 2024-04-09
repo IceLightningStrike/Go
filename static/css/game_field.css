@@ -9,8 +9,28 @@ canvas {
     left: 0;
     right: 0;
 }
-.names
+.blocks
 {
     display: flex;
     justify-content: space-between;
+}
+.name
+{
+    border: 10px outset black;
+    border-radius: 15px;
+    background-color: #111111;
+    padding: 5px;
+    margin: 10px;
+    color: white;
+}
+.number_room
+{
+    border: 10px outset black;
+    border-radius: 15px;
+    background-color: #111111;
+    padding: 5px;
+    margin: 10px;
+    margin-top: 40%;
+    color: white;
+    display: inline-block;
 }

@@ -23,6 +23,16 @@
             </p>
             {% endfor %}
             </p>
+            <p class="booleanfield">
+                {{ form.open_room.label }}
+
+                {{ form.open_room(class="booleanfield")}}<br>
+                {% for error in form.open_room.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+            {% endfor %}
+            </p>
             <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
             <div class="message">{{ message }}</div>
         </form>

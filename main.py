@@ -10,6 +10,7 @@ from forms.login_form import LoginForm
 from forms.create_game import CreateGame
 from forms.del_account import DelAccount
 from forms.game_join import GameJoin
+from forms.edit import ChangeAccount
 
 from data import db_session
 from data.users import User
@@ -176,8 +177,8 @@ def user_data() -> str:
         [[elem.name, elem.count_win] for elem in db_sess.query(User).all()],
         key=lambda x: x[-1],
         reverse=True
-        )
-    ]
+    )
+                 ]
 
     place = user_list.index(f'{user.name}({user.count_win})') + 1
     parametrs = {
@@ -203,6 +204,26 @@ def user_data() -> str:
     )
 
 
+@app.route('/change_account')
+def change_account():
+    ip_address = request.access_route[-1]
+    parametrs = {
+        'name_is_exist': False,
+        'name': 1,
+        'title': 'Редактирование Аккаунта'
+    }
+
+    form = ChangeAccount()
+
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
+
+    if form.validate_on_submit():
+        return render_template('change_account.html', form=form, **parametrs)
+    return render_template('change_account.html', form=form, **parametrs)
+
+
 @app.route("/leader_board")
 def leader_board() -> None:
     ip_address = request.access_route[-1]
@@ -213,7 +234,7 @@ def leader_board() -> None:
         key=lambda x: x[-1],
         reverse=True
     )
-    ]
+                 ]
 
     parametrs = {
         'name_is_exist': False,
@@ -252,22 +273,41 @@ def game_create() -> str:
     if form.validate_on_submit():
         list_size = [0, 9, 13, 19]
         size_board = list_size[int(form.size_board.data)]
-        
-        games_list.append({
-            "game": Go(size_board),
-            "player_1": ip_address,
-            "player_2": None if int(form.black_white.data) == 1 else True,
-            "room_open": True if int(form.black_white.data) == 1 else None
-        })
+
+        list_room = {"game": Go(size_board),
+                     "player_1": None,
+                     "player_2": None,
+                     "room_open": form.open_room.data
+                     }
+        if form.black_white.data == "1":
+            list_room['player_1'] = ip_address
+        else:
+            list_room['player_2'] = ip_address
+        games_list.append(list_room)
 
         try:
             mkdir(f"static/game_links/{game_number}")
         except FileExistsError:
             pass
-        
+
         update_board_picture(games_list[game_number]["game"], game_number)
+        print(games_list)
         return redirect(f"/game/{game_number}")
     return render_template(template_name_or_list="game_create.html", **parametrs)
+
+
+@app.route("/game_join")
+def game_join():
+    ip_address = request.access_route[-1]
+    for i in range(1, len(games_list)):
+        if not games_list[i]['room_open'] and (games_list[i]['player_1'] is None or games_list[i]['player_2'] is None):
+            if games_list[i]['player_1'] is None:
+                games_list[i]['player_1'] = ip_address
+            else:
+                games_list[i]['player_2'] = ip_address
+            print(games_list)
+            return redirect(f"/game/{i}")
+    return redirect('/')
 
 
 @app.route('/game_room', methods=['GET', 'POST'])
@@ -288,6 +328,10 @@ def game_room():
     if form.validate_on_submit():
         if int(form.size_board.data) < len(games_list):
             print(form.size_board.data, len(games_list))
+            if games_list[int(form.size_board.data)]['player_1'] is None:
+                games_list[int(form.size_board.data)]['player_1'] = request.access_route[-1]
+            if games_list[int(form.size_board.data)]['player_2'] is None:
+                games_list[int(form.size_board.data)]['player_2'] = request.access_route[-1]
 
             return redirect(f"/game/{form.size_board.data}")
 
@@ -315,12 +359,12 @@ def game_callback_answer() -> str:
 
         first, second = [
             (
-                ip_address == games_list[game_number]["player_1"] and
-                games_list[game_number]["game"].turn == "black"
+                    ip_address == games_list[game_number]["player_1"] and
+                    games_list[game_number]["game"].turn == "black"
             ),
             (
-                ip_address == games_list[game_number]["player_2"] and
-                games_list[game_number]["game"].turn == "white"
+                    ip_address == games_list[game_number]["player_2"] and
+                    games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -401,22 +445,12 @@ def basic_game_function(game_number: int) -> str:
                 "Game ID is incorrect!"
             ]
         )
-    
-    if not (games_list[game_number]["player_1"] is None or games_list[game_number]["player_2"] is None):
-        if not (games_list[game_number]["room_open"] is True):
-            return render_template(
-            "basic_error_messages.html",
-            messages=[
-                "This Game is private!",
-                "You can't watch it!"
-            ]
-        )
 
     if games_list[game_number]["player_2"] is None:
         if ip_address != games_list[game_number]["player_1"]:
             games_list[game_number]["player_2"] = ip_address
 
-    if games_list[game_number]["player_1"] == ip_address: 
+    if games_list[game_number]["player_1"] == ip_address:
         opponent_ip = games_list[game_number]["player_2"]
     else:
         opponent_ip = games_list[game_number]["player_1"]
@@ -430,13 +464,15 @@ def basic_game_function(game_number: int) -> str:
         'number_room': game_number
     }
 
+    print(clients_dictionary)
+
     if request.access_route[-1] in clients_dictionary:
         parametrs['name_is_exist'] = True
         parametrs['name'] = clients_dictionary[ip_address][1]
 
     if not opponent_ip is None:
         parametrs['player_is_exist'] = True
-        parametrs['name_player'] = clients_dictionary[opponent_ip]
+        parametrs['name_player'] = clients_dictionary[opponent_ip][1]
 
     return render_template("game.html", **parametrs)
 
