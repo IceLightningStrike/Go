@@ -14,10 +14,33 @@
             </p>
             {% endfor %}
             </p>
+
             <p class="checkbox">
                 {{ form.black_white.label }}<br>
                 {{ form.black_white(class="checkbox")}}<br>
                 {% for error in form.black_white.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+            {% endfor %}
+            </p>
+
+            <div>
+                <p>
+                    "9X9" - макс камней 5
+                </p>
+                <p>
+                    "13X13" - макс камней 9
+                </p>
+                <p>
+                    "19X19" - макс камней 9
+                </p>
+            </div>
+            <br>
+            <p class="stone">
+                {{ form.count_stone.label }}<br>
+                {{ form.count_stone(class="stone")}}<br>
+                {% for error in form.count_stone.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
@@ -33,6 +56,7 @@
             </p>
             {% endfor %}
             </p>
+
             <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
             <div class="message">{{ message }}</div>
         </form>

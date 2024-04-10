@@ -10,7 +10,6 @@ from forms.login_form import LoginForm
 from forms.create_game import CreateGame
 from forms.del_account import DelAccount
 from forms.game_join import GameJoin
-from forms.edit import ChangeAccount
 
 from data import db_session
 from data.users import User
@@ -212,16 +211,10 @@ def change_account():
         'name': 1,
         'title': 'Редактирование Аккаунта'
     }
-
-    form = ChangeAccount()
-
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-
-    if form.validate_on_submit():
-        return render_template('change_account.html', form=form, **parametrs)
-    return render_template('change_account.html', form=form, **parametrs)
+    return render_template('change_account.html', **parametrs)
 
 
 @app.route("/leader_board")
@@ -279,6 +272,18 @@ def game_create() -> str:
                      "player_2": None,
                      "room_open": form.open_room.data
                      }
+        print(form.count_stone.data)
+        if int(form.count_stone.data) > 0:
+            if size_board == 9:
+                if int(form.count_stone.data) > 5:
+                    list_room["game"].handicap_stones(5)
+                else:
+                    list_room["game"].handicap_stones(int(form.count_stone.data))
+            else:
+                if int(form.count_stone.data) > 9:
+                    list_room["game"].handicap_stones(9)
+                else:
+                    list_room["game"].handicap_stones(int(form.count_stone.data))
         if form.black_white.data == "1":
             list_room['player_1'] = ip_address
         else:

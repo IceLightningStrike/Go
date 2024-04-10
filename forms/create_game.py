@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, TextAreaField, SubmitField, EmailField, RadioField, BooleanField
+from wtforms import PasswordField, StringField, IntegerField, SubmitField, RadioField, BooleanField
 from wtforms.validators import DataRequired
 
 
@@ -15,7 +15,8 @@ class CreateGame(FlaskForm):
         (1, "Черные"),
         (2, "Белые"),
     ],
-                             default=2,
+                             default=1,
                              validators=[DataRequired()])
+    count_stone = IntegerField('Гандикап камни: ')
     open_room = BooleanField('Закрытая комната:')
     submit = SubmitField('Создать')
