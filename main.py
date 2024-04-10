@@ -217,6 +217,62 @@ def change_account():
     return render_template('change_account.html', **parametrs)
 
 
+@app.route('/change_name', methods=['GET', 'POST'])
+def change_name():
+    ip_address = request.access_route[-1]
+    parametrs = {
+        'name_is_exist': False,
+        'name': 1,
+        'title': 'Редактирование имя'
+    }
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
+    return render_template('change_name.html', **parametrs)
+
+
+@app.route('/change_about', methods=['GET', 'POST'])
+def change_about():
+    ip_address = request.access_route[-1]
+    parametrs = {
+        'name_is_exist': False,
+        'name': 1,
+        'title': 'Редактирование о себе'
+    }
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
+    return render_template('change_about.html', **parametrs)
+
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    ip_address = request.access_route[-1]
+    parametrs = {
+        'name_is_exist': False,
+        'name': 1,
+        'title': 'Редактирование пароля'
+    }
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
+    return render_template('change_password.html', **parametrs)
+
+
+@app.route('/change_email', methods=['GET', 'POST'])
+def change_email():
+    ip_address = request.access_route[-1]
+    parametrs = {
+        'name_is_exist': False,
+        'name': 1,
+        'title': 'Редактирование email'
+    }
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
+    return render_template('change_email.html', **parametrs)
+
+
 @app.route("/leader_board")
 def leader_board() -> None:
     ip_address = request.access_route[-1]
