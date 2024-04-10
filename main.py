@@ -10,6 +10,10 @@ from forms.login_form import LoginForm
 from forms.create_game import CreateGame
 from forms.del_account import DelAccount
 from forms.game_join import GameJoin
+from forms.change_about import ChangeAbout
+from forms.change_email import ChangeEmail
+from forms.change_password import ChangePassword
+from forms.change_name import ChangeName
 
 from data import db_session
 from data.users import User
@@ -225,24 +229,33 @@ def change_name():
         'name': 1,
         'title': 'Редактирование имя'
     }
+
+    form = ChangeName()
+
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-    return render_template('change_name.html', **parametrs)
+
+    return render_template('change_name.html', form=form, **parametrs)
 
 
 @app.route('/change_about', methods=['GET', 'POST'])
 def change_about():
     ip_address = request.access_route[-1]
+
     parametrs = {
         'name_is_exist': False,
         'name': 1,
         'title': 'Редактирование о себе'
     }
+
+    form = ChangeAbout()
+
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-    return render_template('change_about.html', **parametrs)
+
+    return render_template('change_about.html', form=form, **parametrs)
 
 
 @app.route('/change_password', methods=['GET', 'POST'])
@@ -253,10 +266,14 @@ def change_password():
         'name': 1,
         'title': 'Редактирование пароля'
     }
+
+    form = ChangePassword()
+
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-    return render_template('change_password.html', **parametrs)
+
+    return render_template('change_password.html', form=form, **parametrs)
 
 
 @app.route('/change_email', methods=['GET', 'POST'])
@@ -267,10 +284,14 @@ def change_email():
         'name': 1,
         'title': 'Редактирование email'
     }
+
+    form = ChangeEmail()
+
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-    return render_template('change_email.html', **parametrs)
+
+    return render_template('change_email.html', form=form, **parametrs)
 
 
 @app.route("/leader_board")

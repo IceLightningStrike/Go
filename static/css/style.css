@@ -129,3 +129,11 @@ p
     justify-content: space-around;
     margin-top: 30px;
 }
+.form-change
+{
+    background-color: #0c114f;
+    width: 40%;
+    padding: 10px;
+    border: 10px outset black;
+    border-radius: 30px;
+}
