@@ -1,7 +1,7 @@
 from settings import HOST, PORT
 
 from flask import Flask, render_template, request, redirect
-from flask import Response
+from flask import Blueprint, Response
 
 from flask_login import LoginManager, login_user
 
@@ -24,8 +24,12 @@ from go import Go
 
 from os import mkdir
 
+from time import time, sleep
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+blueprint = Blueprint('go_api', __name__, template_folder='templates')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -304,7 +308,7 @@ def leader_board() -> None:
         key=lambda x: x[-1],
         reverse=True
     )
-                 ]
+    ]
 
     parametrs = {
         'name_is_exist': False,
@@ -328,6 +332,28 @@ def game_create() -> str:
     ip_address = request.access_route[-1]
     game_number = len(games_list)
 
+    games_counter = 0
+    for game_information in games_list:
+        if game_information is None:
+            continue
+
+        try:
+            if game_information["player_1"] == ip_address and not game_information["was_closed"]:
+                games_counter += 1
+        except KeyError:
+            pass
+
+        try:
+            if game_information["player_2"] == ip_address and not game_information["was_closed"]:
+                games_counter += 1
+        except KeyError:
+            pass
+
+    if games_counter >= 3:
+        return render_template("basic_error_messages.html", messages=[
+            "You can't start more than 3 games at the same time"
+        ])
+
     form = CreateGame()
     parametrs = {
         'name_is_exist': False,
@@ -344,11 +370,14 @@ def game_create() -> str:
         list_size = [0, 9, 13, 19]
         size_board = list_size[int(form.size_board.data)]
 
-        list_room = {"game": Go(size_board),
-                     "player_1": None,
-                     "player_2": None,
-                     "room_open": form.open_room.data
-                     }
+        list_room = {
+            "game": Go(size_board),
+            "player_1": None,
+            "player_2": None,
+            "room_open": form.open_room.data,
+            "was_closed": False
+        }
+
         print(form.count_stone.data)
         if int(form.count_stone.data) > 0:
             if size_board == 9:
@@ -361,10 +390,12 @@ def game_create() -> str:
                     list_room["game"].handicap_stones(9)
                 else:
                     list_room["game"].handicap_stones(int(form.count_stone.data))
+
         if form.black_white.data == "1":
             list_room['player_1'] = ip_address
         else:
             list_room['player_2'] = ip_address
+
         games_list.append(list_room)
 
         try:
@@ -441,17 +472,17 @@ def game_callback_answer() -> str:
 
         first, second = [
             (
-                    ip_address == games_list[game_number]["player_1"] and
-                    games_list[game_number]["game"].turn == "black"
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
             ),
             (
-                    ip_address == games_list[game_number]["player_2"] and
-                    games_list[game_number]["game"].turn == "white"
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
             )
         ]
 
-        if not (first or second):
-            return "Error"
+        # if not (first or second):
+        #     return "Error"
 
         site_field_width, site_field_height = map(int, map(float, request.form["size"].split(";")))
 
@@ -546,8 +577,6 @@ def basic_game_function(game_number: int) -> str:
         'number_room': game_number
     }
 
-    print(clients_dictionary)
-
     if request.access_route[-1] in clients_dictionary:
         parametrs['name_is_exist'] = True
         parametrs['name'] = clients_dictionary[ip_address][1]
@@ -559,5 +588,28 @@ def basic_game_function(game_number: int) -> str:
     return render_template("game.html", **parametrs)
 
 
+@blueprint.route('/api/game_save/game_id=<int:game_id>/speed=<int:speed>')
+def get_go_replay(game_id, speed):
+    ip_address = request.access_route[-1]
+
+    try:
+        mkdir(f"static/game_links/{game_id}/{ip_address}")
+    except Exception:
+        pass
+
+    try:
+        assert 1 <= speed <= 10
+
+        save_game_replay(games_list[game_id]["game"], game_id, ip_address, speed=speed)
+    except Exception as error:
+        print(repr(error))
+        return render_template("basic_error_messages.html", messages=[
+            "Wrong request"
+        ])
+    
+    return render_template("show_game_api.html", game_id=game_id, ip=ip_address)
+
+
 if __name__ == "__main__":
+    app.register_blueprint(blueprint)
     app.run(host=HOST, port=PORT)

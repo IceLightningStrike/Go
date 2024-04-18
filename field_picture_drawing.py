@@ -1,25 +1,25 @@
 from PIL import ImageDraw, ImageFont, Image
-from cv2 import VideoWriter, imread
+from cv2 import VideoWriter, VideoWriter_fourcc, imread
 from go import Go
 
 BACKGROUND_COLOR = (221, 134, 74)
 WIDTH = HEIGHT = SIZE = 1000
 
 
-def save_game_replay(board: Go, game_number: int, width: int = 1000, height: int = 1000, speed: int = 1) -> None:
-    video = VideoWriter(f"static/game_links/{game_number}/Replay.mp4", 0, 1, (width, height))
+def save_game_replay(board: Go, game_number: int, ip: str, width: int = 1000, height: int = 1000, speed: int = 1) -> None:
+    video = VideoWriter(f"static/game_links/{game_number}/{ip}/replay.mp4", 0, speed, (width, height))
 
     for elem in board.global_boards_history:
         obj = Go(board.width, board.height)
         obj.board = elem
 
-        update_board_picture(obj, game_number, video_save=True)
-        video.write(imread(f"static/game_links/{game_number}/clip_frame.jpeg"))
+        update_board_picture(obj, game_number, ip=ip)
+        video.write(imread(f"static/game_links/{game_number}/{ip}/clip_frame.jpeg"))
     
     video.release()
 
 
-def update_board_picture(board: Go, game_number: int, video_save: bool = False) -> None:
+def update_board_picture(board: Go, game_number: int, ip: None | int = None) -> None:
     img = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND_COLOR)
     drawer = ImageDraw.Draw(img)
 
@@ -70,7 +70,7 @@ def update_board_picture(board: Go, game_number: int, video_save: bool = False) 
             elif element == "o":
                 drawer.ellipse(coordinates, fill=(255, 255, 255))
 
-    if video_save is False:
+    if ip is None:
         img.save(f"static/game_links/{game_number}/game_picture.jpeg")
     else:
-        img.save(f"static/game_links/{game_number}/clip_frame.jpeg")
+        img.save(f"static/game_links/{game_number}/{ip}/clip_frame.jpeg")
