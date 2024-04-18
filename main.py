@@ -481,8 +481,8 @@ def game_callback_answer() -> str:
             )
         ]
 
-        # if not (first or second):
-        #     return "Error"
+        if not (first or second):
+            return "Error"
 
         site_field_width, site_field_height = map(int, map(float, request.form["size"].split(";")))
 
