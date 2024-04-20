@@ -2,10 +2,11 @@
 
 {% block content %}
 
-<h1 class="text-white" style="text-align: center;">That is site GO</h1>
+<h1 class="text-white" style="text-align: center;">This is site GO</h1>
 
 
 {% if name_is_exist %}
+{% endif %}
 <div class="button-game">
     <a class="btn btn-info" href="/game_join">Играть</a>
     <a class="btn btn-success" href="/game_create">Создать игру</a>
@@ -15,6 +16,11 @@
        href="https://www.youtube.com/results?search_query=%D0%B3%D0%BE+%D0%BA%D0%B0%D0%BA+%D0%B8%D0%B3%D1%80%D0%B0%D1%82%D1%8C">Правила</a>
 
 </div>
-{% endif %}
+<div>
+    <h2>
+        Информация про Go
+    </h2>
+</div>
+
 
 {% endblock %}

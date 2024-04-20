@@ -11,7 +11,6 @@ from forms.create_game import CreateGame
 from forms.del_account import DelAccount
 from forms.game_join import GameJoin
 from forms.change_about import ChangeAbout
-from forms.change_email import ChangeEmail
 from forms.change_password import ChangePassword
 from forms.change_name import ChangeName
 
@@ -25,7 +24,6 @@ from go import Go
 from os import mkdir
 
 from time import time, sleep
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -239,6 +237,14 @@ def change_name():
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
+    if form.validate_on_submit():
+        data = form.new_name.data
+        user = db_sess.query(User).filter(User.id == clients_dictionary[ip_address][0]).first()
+        user.name = data
+        clients_dictionary[ip_address][1] = data
+        db_sess.add(user)
+        db_sess.commit()
+        return redirect('/user_data')
 
     return render_template('change_name.html', form=form, **parametrs)
 
@@ -258,7 +264,13 @@ def change_about():
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-
+    if form.validate_on_submit():
+        data = form.new_about.data
+        user = db_sess.query(User).filter(User.id == clients_dictionary[ip_address][0]).first()
+        user.about = data
+        db_sess.add(user)
+        db_sess.commit()
+        return redirect('/user_data')
     return render_template('change_about.html', form=form, **parametrs)
 
 
@@ -276,26 +288,14 @@ def change_password():
     if ip_address in clients_dictionary:
         parametrs['name'] = clients_dictionary[ip_address][1]
         parametrs['name_is_exist'] = True
-
+    if form.validate_on_submit():
+        data = form.new_password.data
+        user = db_sess.query(User).filter(User.id == clients_dictionary[ip_address][0]).first()
+        user.set_password(data)
+        db_sess.add(user)
+        db_sess.commit()
+        return redirect('/user_data')
     return render_template('change_password.html', form=form, **parametrs)
-
-
-@app.route('/change_email', methods=['GET', 'POST'])
-def change_email():
-    ip_address = request.access_route[-1]
-    parametrs = {
-        'name_is_exist': False,
-        'name': 1,
-        'title': 'Редактирование email'
-    }
-
-    form = ChangeEmail()
-
-    if ip_address in clients_dictionary:
-        parametrs['name'] = clients_dictionary[ip_address][1]
-        parametrs['name_is_exist'] = True
-
-    return render_template('change_email.html', form=form, **parametrs)
 
 
 @app.route("/leader_board")
@@ -308,7 +308,7 @@ def leader_board() -> None:
         key=lambda x: x[-1],
         reverse=True
     )
-    ]
+                 ]
 
     parametrs = {
         'name_is_exist': False,
@@ -472,12 +472,12 @@ def game_callback_answer() -> str:
 
         first, second = [
             (
-                ip_address == games_list[game_number]["player_1"] and
-                games_list[game_number]["game"].turn == "black"
+                    ip_address == games_list[game_number]["player_1"] and
+                    games_list[game_number]["game"].turn == "black"
             ),
             (
-                ip_address == games_list[game_number]["player_2"] and
-                games_list[game_number]["game"].turn == "white"
+                    ip_address == games_list[game_number]["player_2"] and
+                    games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -606,7 +606,7 @@ def get_go_replay(game_id, speed):
         return render_template("basic_error_messages.html", messages=[
             "Wrong request"
         ])
-    
+
     return render_template("show_game_api.html", game_id=game_id, ip=ip_address)
 
 

@@ -65,7 +65,7 @@ p
     padding: 10px;
     border: 10px outset black;
     border-radius: 15px;
-    min-height: 500px;
+    min-height: 300px;
     margin: 5px;
 }
 .line-dividing
@@ -117,7 +117,11 @@ p
 .button-game
 {
     display: flex;
+    flex-direction: column;
     justify-content: space-around;
+    height: 400px;
+    width: 230px;
+    margin: 20px;
 }
 .checkbox
 {
@@ -136,4 +140,13 @@ p
     padding: 10px;
     border: 10px outset black;
     border-radius: 30px;
+}
+.about
+{
+    min-width: 100%;
+    min-height: 175px;
+}
+.about-block
+{
+    padding: 10px;
 }

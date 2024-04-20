@@ -6,8 +6,8 @@
         <h1>О себе</h1>
         <form action="" method="post">
             {{ form.hidden_tag() }}
-            <p>
-                {{ form.new_about()}}<br>
+            <p class="about-block">
+                {{ form.new_about(class="about")}}<br>
                 {% for error in form.new_about.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
