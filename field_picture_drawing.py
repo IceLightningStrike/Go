@@ -22,7 +22,6 @@ def save_game_replay(board: Go, game_number: int, ip: str, width: int = 1000, he
 def update_board_picture(board: Go, game_number: int, ip: None | int = None) -> None:
     img = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND_COLOR)
     drawer = ImageDraw.Draw(img)
-
     cell_size = int(SIZE / (board.width + 3))
     game_font = ImageFont.truetype("arial.ttf", cell_size // 2, encoding="unic")
 

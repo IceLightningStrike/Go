@@ -550,7 +550,6 @@ def del_account():
 @app.route(f"/game/<int:game_number>")
 def basic_game_function(game_number: int) -> str:
     ip_address = request.access_route[-1]
-
     if not (1 <= game_number <= len(games_list)):
         return render_template(
             "basic_error_messages.html",
