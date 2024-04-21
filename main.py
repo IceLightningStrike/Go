@@ -142,6 +142,14 @@ def login() -> str | Response:
 
         if user and user.check_password(form.password.data):
             login_user(user=user, remember=form.remember_me.data)
+            for elem in clients_dictionary:
+                if elem[0] == user.id:
+                    return render_template(
+                        template_name_or_list='login.html',
+                        message="Аккаунт уже кто то зашел",
+                        form=form,
+                        **parametrs
+                    )
             clients_dictionary[request.access_route[-1]] = [user.id, user.name, False]
 
             return redirect("/")
@@ -466,6 +474,7 @@ def game_room():
 
 @app.route('/game_callback_answer', methods=['POST'])
 def game_callback_answer() -> str:
+    print('Hi')
     if request.method == 'POST':
         game_number = int(request.form["game_number"])
         ip_address = request.access_route[-1]
@@ -499,6 +508,7 @@ def game_callback_answer() -> str:
                 f"{games_list[game_number]['game'].alphabet[x]}"
             )
             update_board_picture(games_list[game_number]["game"], game_number)
+
         except Exception as error:
             print(repr(error))
 
@@ -583,6 +593,7 @@ def basic_game_function(game_number: int) -> str:
     if not opponent_ip is None:
         parametrs['player_is_exist'] = True
         parametrs['name_player'] = clients_dictionary[opponent_ip][1]
+
 
     return render_template("game.html", **parametrs)
 
