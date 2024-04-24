@@ -328,6 +328,9 @@ def leader_board() -> None:
         'user_list': user_list,
         'name_user': f'{user.name}({user.count_win})'
     }
+    if ip_address in clients_dictionary:
+        parametrs['name'] = clients_dictionary[ip_address][1]
+        parametrs['name_is_exist'] = True
 
     return render_template(
         template_name_or_list="table_leadry.html",
@@ -474,7 +477,6 @@ def game_room():
 
 @app.route('/game_callback_answer', methods=['POST'])
 def game_callback_answer() -> str:
-    print('Hi')
     if request.method == 'POST':
         game_number = int(request.form["game_number"])
         ip_address = request.access_route[-1]
@@ -593,7 +595,6 @@ def basic_game_function(game_number: int) -> str:
     if not opponent_ip is None:
         parametrs['player_is_exist'] = True
         parametrs['name_player'] = clients_dictionary[opponent_ip][1]
-
 
     return render_template("game.html", **parametrs)
 
