@@ -15,9 +15,14 @@
 <div class="blocks">
     <h2 class="name">Имя противника: {{ name_player }}</h2>
 </div>
+
+<div class="blocks-button">
+    <a class="btn btn-info" href="/http://{{host}}:{{port}}/api/game_save/game_id={{n}}/speed=1">Скачать игру</a>
+</div>
 <h2 class="number_room">
         Номер комнаты: {{ number_room }}
 </h2>
+
 {% endif %}
 <canvas id="game_canvas"></canvas>
 

@@ -34,3 +34,10 @@ canvas {
     color: white;
     display: inline-block;
 }
+.blocks-button
+{
+    display: flex;
+    justify-content: space-between;
+    margin: 5px;
+    padding: 5px;
+}
