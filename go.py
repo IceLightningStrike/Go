@@ -53,6 +53,7 @@ class Go:
         self.turn = "black"
 
         self.handicap_placed = False
+        self.win = None
 
     def get_position(self: Go, pos: str) -> str:
         line, column = -int(pos[:-1]), self.alphabet.find(pos[-1])

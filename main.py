@@ -483,12 +483,12 @@ def game_callback_answer() -> str:
 
         first, second = [
             (
-                    ip_address == games_list[game_number]["player_1"] and
-                    games_list[game_number]["game"].turn == "black"
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
             ),
             (
-                    ip_address == games_list[game_number]["player_2"] and
-                    games_list[game_number]["game"].turn == "white"
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
             )
         ]
 
@@ -516,6 +516,52 @@ def game_callback_answer() -> str:
 
         return "Ok"
     return "Error"
+
+
+@app.route('/give_up', methods=['POST'])
+def give_up() -> str:
+    if request.method == 'POST':
+        game_number = int(request.form["game_number"])
+        ip_address = request.access_route[-1]
+
+        first, second = [
+            (
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
+            ),
+            (
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
+            )
+        ]
+
+        if not (first or second):
+            return "Error"
+        
+        games_list[game_number]["game"].win = ip_address
+
+
+@app.route('/pass_move', methods=['POST'])
+def pass_move() -> str:
+    if request.method == 'POST':
+        game_number = int(request.form["game_number"])
+        ip_address = request.access_route[-1]
+
+        first, second = [
+            (
+                ip_address == games_list[game_number]["player_1"] and
+                games_list[game_number]["game"].turn == "black"
+            ),
+            (
+                ip_address == games_list[game_number]["player_2"] and
+                games_list[game_number]["game"].turn == "white"
+            )
+        ]
+
+        if not (first or second):
+            return "Error"
+        
+        games_list[game_number]["game"].pass_turn()
 
 
 @app.route("/del", methods=['GET', 'POST'])
@@ -570,6 +616,16 @@ def basic_game_function(game_number: int) -> str:
             ]
         )
 
+    if games_list[game_number]["room_open"]:
+        if games_list[game_number]["player_1"] is not None and games_list[game_number]["player_2"] is not None:
+            if games_list[game_number]["player_1"] != ip_address and games_list[game_number]["player_2"] != ip_address:
+                return render_template(
+                    "basic_error_messages.html",
+                    messages=[
+                        "This room is private!"
+                    ]
+                )
+
     if games_list[game_number]["player_2"] is None:
         if ip_address != games_list[game_number]["player_1"]:
             games_list[game_number]["player_2"] = ip_address
@@ -596,7 +652,7 @@ def basic_game_function(game_number: int) -> str:
         parametrs['player_is_exist'] = True
         parametrs['name_player'] = clients_dictionary[opponent_ip][1]
 
-    return render_template("game.html", **parametrs)
+    return render_template("game.html", **parametrs, n=game_number)
 
 
 @blueprint.route('/api/game_save/game_id=<int:game_id>/speed=<int:speed>')

@@ -23,6 +23,32 @@ function postData(input_coordinates, input_size) {
     });
 }
 
+
+function give_up() {
+    $.ajax({
+        type: "POST",
+        url: "/give_up",
+        data: {
+            game_number: game_number,
+        },
+        success: callbackFunc,
+    });
+}
+
+
+function pass_move() {
+    $.ajax({
+        type: "POST",
+        url: "/pass_move",
+        data: {
+            game_number: game_number,
+        },
+        success: callbackFunc,
+    });
+}
+
+
+
 function callbackFunc(response) {
     console.log(response);
 }

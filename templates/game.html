@@ -17,10 +17,17 @@
 </div>
 
 <div class="blocks-button">
-    <a class="btn btn-info" href="/http://{{host}}:{{port}}/api/game_save/game_id={{n}}/speed=1">Скачать игру</a>
+    <a class="btn btn-info" href="/api/game_save/game_id={{n}}/speed=1">Скачать игру</a>
 </div>
+<div class="blocks-button">
+    <a class="btn btn-info" onclick="pass_move()">Пропустить ход</a>
+</div>
+<div class="blocks-button">
+    <a class="btn btn-info" onclick="give_up()">Сдаться</a>
+</div>
+
 <h2 class="number_room">
-        Номер комнаты: {{ number_room }}
+    Номер комнаты: {{ number_room }}
 </h2>
 
 {% endif %}
